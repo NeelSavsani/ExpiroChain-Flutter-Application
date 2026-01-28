@@ -63,21 +63,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
     try {
       final result = await ApiService.sendOtpWithFiles(
         fields: {
-          'firm_name': firmController.text,
-          'owner_name': ownerController.text,
-          'user_type': 'Medical Store',
-          'email_id': emailController.text,
-          'phn_no': phoneController.text,
-          'gstno': gstNoController.text,
-          'dl1': dl1NoController.text,
-          'dl2': dl2NoController.text,
-          'address': addressController.text,
-          'user_pass': passController.text,
-          're_password': confirmController.text,
+          "firm_name": firmController.text,
+          "owner_name": ownerController.text,
+          "user_type": "Medical Store",
+          "email_id": emailController.text,
+          "phn_no": phoneController.text,
+          "gstno": gstNoController.text,
+          "dl1": dl1NoController.text,
+          "dl2": dl2NoController.text,
+          "address": addressController.text,
+          "user_pass": passController.text,
+          "re_password": confirmController.text,
         },
-        gstFile: gstFile!,
-        dl1File: dl1File!,
-        dl2File: dl2File!,
+        files: {
+          "gst_file": gstFile,
+          "dl1_file": dl1File,
+          "dl2_file": dl2File,
+        },
       );
 
       if (result['status'] == 'success') {

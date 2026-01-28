@@ -1,3 +1,4 @@
+import 'forgot_password_screen.dart';
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../widgets/custom_textfield.dart';
@@ -18,8 +19,14 @@ class _LoginScreenState extends State<LoginScreen> {
   bool isLoading = false;
 
   Future<void> doLogin() async {
-    final email = emailController.text.trim();
-    final pass = passwordController.text.trim();
+    FocusScope.of(context).unfocus();
+    await Future.delayed(const Duration(milliseconds: 100));
+
+    final email = emailController.text.replaceAll('\u200B', '').trim();
+    final pass = passwordController.text.replaceAll('\u200B', '').trim();
+
+    print("EMAIL: '$email'");
+    print("PASS: '$pass'");
 
     if (email.isEmpty || pass.isEmpty) {
       ScaffoldMessenger.of(context)
@@ -46,7 +53,9 @@ class _LoginScreenState extends State<LoginScreen> {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text("Error: $e")));
     } finally {
-      setState(() => isLoading = false);
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
     }
   }
 
@@ -79,7 +88,26 @@ class _LoginScreenState extends State<LoginScreen> {
                 text: isLoading ? "Logging in..." : "Login",
                 onPressed: isLoading ? () {} : doLogin,
               ),
-              const SizedBox(height: 12),
+              Center(
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const ForgotPasswordScreen(),
+                      ),
+                    );
+                  },
+                  child: const Text(
+                    "Forgot Password?",
+                    style: TextStyle(
+                      color: Colors.blue,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 7),
               TextButton(
                 onPressed: () {
                   Navigator.push(

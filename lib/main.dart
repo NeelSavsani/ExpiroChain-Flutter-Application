@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'screens/login_screen.dart';
 import 'services/api_service.dart';
 
-void main() {
-  ApiService.init(); // 🔥 IMPORTANT
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await ApiService.init();   // 🔥 REQUIRED
   runApp(const MyApp());
 }
 
