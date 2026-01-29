@@ -33,6 +33,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   bool isLoading = false;
 
+  // ================= FILE PICKER =================
   Future<void> pickFile(Function(File) onPicked) async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.image,
@@ -43,6 +44,38 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
+  // ================= FILE TILE WIDGET =================
+  Widget buildFilePickerTile({
+    required String label,
+    required File? file,
+    required VoidCallback onPick,
+    required VoidCallback onClear,
+  }) {
+    return Card(
+      elevation: 1,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      child: ListTile(
+        leading: const Icon(Icons.upload_file, color: Colors.blue),
+        title: Text(
+          file == null ? label : file.path.split('/').last,
+          style: TextStyle(
+            color: file == null ? Colors.grey[600] : Colors.black,
+            fontWeight: file == null ? FontWeight.normal : FontWeight.w600,
+          ),
+        ),
+        subtitle: file != null ? const Text("Tap to change file") : null,
+        trailing: file == null
+            ? const Icon(Icons.attach_file)
+            : IconButton(
+          icon: const Icon(Icons.close, color: Colors.red),
+          onPressed: onClear,
+        ),
+        onTap: onPick,
+      ),
+    );
+  }
+
+  // ================= SEND OTP =================
   Future<void> sendOtp() async {
     if (gstFile == null || dl1File == null || dl2File == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -96,10 +129,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text("Error: $e")));
     } finally {
-      setState(() => isLoading = false);
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
     }
   }
 
+  // ================= UI =================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -108,29 +144,49 @@ class _RegisterScreenState extends State<RegisterScreen> {
         padding: const EdgeInsets.all(24),
         child: Column(
           children: [
-            CustomTextField(controller: firmController, label: "Firm Name", icon: Icons.store),
+            CustomTextField(
+                controller: firmController,
+                label: "Firm Name",
+                icon: Icons.store),
             const SizedBox(height: 10),
 
-            CustomTextField(controller: ownerController, label: "Owner Name", icon: Icons.person),
+            CustomTextField(
+                controller: ownerController,
+                label: "Owner Name",
+                icon: Icons.person),
             const SizedBox(height: 10),
 
-            CustomTextField(controller: emailController, label: "Email", icon: Icons.email),
+            CustomTextField(
+                controller: emailController,
+                label: "Email",
+                icon: Icons.email),
             const SizedBox(height: 10),
 
-            CustomTextField(controller: phoneController, label: "Phone", icon: Icons.phone),
+            CustomTextField(
+                controller: phoneController,
+                label: "Phone",
+                icon: Icons.phone,
+                keyboardType: TextInputType.phone),
             const SizedBox(height: 10),
 
-            // ✅ GST / DL Numbers
-            CustomTextField(controller: gstNoController, label: "GST Number", icon: Icons.confirmation_number),
+            CustomTextField(
+                controller: gstNoController,
+                label: "GST Number",
+                icon: Icons.confirmation_number),
             const SizedBox(height: 10),
 
-            CustomTextField(controller: dl1NoController, label: "DL1 Number", icon: Icons.badge),
+            CustomTextField(
+                controller: dl1NoController,
+                label: "DL1 Number",
+                icon: Icons.badge),
             const SizedBox(height: 10),
 
-            CustomTextField(controller: dl2NoController, label: "DL2 Number", icon: Icons.badge_outlined),
+            CustomTextField(
+                controller: dl2NoController,
+                label: "DL2 Number",
+                icon: Icons.badge_outlined),
             const SizedBox(height: 10),
 
-            // ✅ Address (Textarea)
             CustomTextField(
               controller: addressController,
               label: "Complete Address",
@@ -139,7 +195,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ),
             const SizedBox(height: 10),
 
-            // ✅ Password with Eye Toggle
             CustomTextField(
               controller: passController,
               label: "Password",
@@ -154,27 +209,36 @@ class _RegisterScreenState extends State<RegisterScreen> {
               icon: Icons.lock_outline,
               isPassword: true,
             ),
-
             const SizedBox(height: 20),
 
-            // ✅ File Pickers
-            ListTile(
-              title: Text(gstFile == null ? "Select GST Certificate" : "GST Certificate Selected"),
-              trailing: const Icon(Icons.attach_file),
-              onTap: () => pickFile((f) => setState(() => gstFile = f)),
+            // ================= FILE PICKERS =================
+            buildFilePickerTile(
+              label: "Select GST Certificate",
+              file: gstFile,
+              onPick: () =>
+                  pickFile((f) => setState(() => gstFile = f)),
+              onClear: () => setState(() => gstFile = null),
             ),
-            ListTile(
-              title: Text(dl1File == null ? "Select DL1 Certificate" : "DL1 Certificate Selected"),
-              trailing: const Icon(Icons.attach_file),
-              onTap: () => pickFile((f) => setState(() => dl1File = f)),
+            const SizedBox(height: 8),
+
+            buildFilePickerTile(
+              label: "Select DL1 Certificate",
+              file: dl1File,
+              onPick: () =>
+                  pickFile((f) => setState(() => dl1File = f)),
+              onClear: () => setState(() => dl1File = null),
             ),
-            ListTile(
-              title: Text(dl2File == null ? "Select DL2 Certificate" : "DL2 Certificate Selected"),
-              trailing: const Icon(Icons.attach_file),
-              onTap: () => pickFile((f) => setState(() => dl2File = f)),
+            const SizedBox(height: 8),
+
+            buildFilePickerTile(
+              label: "Select DL2 Certificate",
+              file: dl2File,
+              onPick: () =>
+                  pickFile((f) => setState(() => dl2File = f)),
+              onClear: () => setState(() => dl2File = null),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
 
             CustomButton(
               text: isLoading ? "Sending OTP..." : "Send OTP",
