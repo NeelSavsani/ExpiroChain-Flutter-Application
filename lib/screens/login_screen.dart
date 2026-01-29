@@ -25,9 +25,6 @@ class _LoginScreenState extends State<LoginScreen> {
     final email = emailController.text.replaceAll('\u200B', '').trim();
     final pass = passwordController.text.replaceAll('\u200B', '').trim();
 
-    print("EMAIL: '$email'");
-    print("PASS: '$pass'");
-
     if (email.isEmpty || pass.isEmpty) {
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text("Fill all fields")));
@@ -40,9 +37,13 @@ class _LoginScreenState extends State<LoginScreen> {
       final result = await ApiService.login(email, pass);
 
       if (result['status'] == 'success') {
+        final firmName = result['user']['firm_name'];
+
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
+          MaterialPageRoute(
+            builder: (_) => HomeScreen(firmName: firmName),
+          ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -68,8 +69,10 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text("EXPIROCHAIN Login",
-                  style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
+              const Text(
+                "EXPIROCHAIN Login",
+                style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 20),
               CustomTextField(
                 controller: emailController,
@@ -113,11 +116,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (_) => const RegisterScreen()),
+                      builder: (_) => const RegisterScreen(),
+                    ),
                   );
                 },
                 child: const Text("Create Account"),
-              )
+              ),
             ],
           ),
         ),

@@ -2,7 +2,12 @@ import 'package:flutter/material.dart';
 import 'login_screen.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+  final String firmName;
+
+  const HomeScreen({
+    super.key,
+    required this.firmName,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -22,11 +27,27 @@ class HomeScreen extends StatelessWidget {
           )
         ],
       ),
-      body: const Center(
-        child: Text(
-          "Welcome to EXPIROCHAIN 👋\n\nDashboard coming soon...",
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 18),
+      body: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.business, size: 64, color: Colors.blue),
+            const SizedBox(height: 16),
+            Text(
+              "Welcome, $firmName 👋",
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              "Welcome to EXPIROCHAIN\n\nDashboard coming soon...",
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 16),
+            ),
+          ],
         ),
       ),
     );
