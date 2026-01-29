@@ -108,32 +108,32 @@ class _RegisterScreenState extends State<RegisterScreen> {
         padding: const EdgeInsets.all(24),
         child: Column(
           children: [
-            CustomTextField(controller: firmController, hint: "Firm Name", icon: Icons.store),
+            CustomTextField(controller: firmController, label: "Firm Name", icon: Icons.store),
             const SizedBox(height: 10),
 
-            CustomTextField(controller: ownerController, hint: "Owner Name", icon: Icons.person),
+            CustomTextField(controller: ownerController, label: "Owner Name", icon: Icons.person),
             const SizedBox(height: 10),
 
-            CustomTextField(controller: emailController, hint: "Email", icon: Icons.email),
+            CustomTextField(controller: emailController, label: "Email", icon: Icons.email),
             const SizedBox(height: 10),
 
-            CustomTextField(controller: phoneController, hint: "Phone", icon: Icons.phone),
+            CustomTextField(controller: phoneController, label: "Phone", icon: Icons.phone),
             const SizedBox(height: 10),
 
             // ✅ GST / DL Numbers
-            CustomTextField(controller: gstNoController, hint: "GST Number", icon: Icons.confirmation_number),
+            CustomTextField(controller: gstNoController, label: "GST Number", icon: Icons.confirmation_number),
             const SizedBox(height: 10),
 
-            CustomTextField(controller: dl1NoController, hint: "DL1 Number", icon: Icons.badge),
+            CustomTextField(controller: dl1NoController, label: "DL1 Number", icon: Icons.badge),
             const SizedBox(height: 10),
 
-            CustomTextField(controller: dl2NoController, hint: "DL2 Number", icon: Icons.badge_outlined),
+            CustomTextField(controller: dl2NoController, label: "DL2 Number", icon: Icons.badge_outlined),
             const SizedBox(height: 10),
 
             // ✅ Address (Textarea)
             CustomTextField(
               controller: addressController,
-              hint: "Complete Address",
+              label: "Complete Address",
               icon: Icons.location_on,
               maxLines: 3,
             ),
@@ -142,7 +142,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             // ✅ Password with Eye Toggle
             CustomTextField(
               controller: passController,
-              hint: "Password",
+              label: "Password",
               icon: Icons.lock,
               isPassword: true,
             ),
@@ -150,7 +150,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
             CustomTextField(
               controller: confirmController,
-              hint: "Confirm Password",
+              label: "Confirm Password",
               icon: Icons.lock_outline,
               isPassword: true,
             ),

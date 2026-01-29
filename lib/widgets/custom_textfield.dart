@@ -2,18 +2,20 @@ import 'package:flutter/material.dart';
 
 class CustomTextField extends StatefulWidget {
   final TextEditingController controller;
-  final String hint;
+  final String label;          // 🔥 changed from hint
   final IconData icon;
   final bool isPassword;
   final int maxLines;
+  final TextInputType keyboardType;
 
   const CustomTextField({
     super.key,
     required this.controller,
-    required this.hint,
+    required this.label,       // 🔥 floating label
     required this.icon,
     this.isPassword = false,
     this.maxLines = 1,
+    this.keyboardType = TextInputType.text,
   });
 
   @override
@@ -31,9 +33,11 @@ class _CustomTextFieldState extends State<CustomTextField> {
       controller: widget.controller,
       obscureText: isPwd ? _obscure : false,
       maxLines: widget.maxLines,
+      keyboardType: widget.keyboardType,
       decoration: InputDecoration(
+        labelText: widget.label,        // 🔥 FLOATING LABEL
+        floatingLabelBehavior: FloatingLabelBehavior.auto,
         prefixIcon: Icon(widget.icon),
-        hintText: widget.hint,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
         ),

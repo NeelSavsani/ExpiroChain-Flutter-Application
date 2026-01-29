@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:expirochain_app/services/api_service.dart';
 import 'verify_reset_otp_screen.dart';
+import 'package:expirochain_app/widgets/custom_textfield.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -69,14 +70,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
             const SizedBox(height: 20),
 
-            TextField(
+            CustomTextField(
               controller: inputController,
+              label: "Email or Mobile Number",
+              icon: Icons.person,
               keyboardType: TextInputType.emailAddress,
-              decoration: const InputDecoration(
-                labelText: "Email or Mobile Number",
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.person),
-              ),
             ),
 
             const SizedBox(height: 24),
