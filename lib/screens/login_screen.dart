@@ -5,6 +5,7 @@ import '../widgets/custom_textfield.dart';
 import '../widgets/custom_button.dart';
 import 'register_screen.dart';
 import 'home_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -38,6 +39,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (result['status'] == 'success') {
         final firmName = result['user']['firm_name'];
+
+        // 🔥 SAVE LOGIN STATE
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('isLoggedIn', true);
+        await prefs.setString('firmName', firmName);
 
         Navigator.pushReplacement(
           context,
@@ -74,12 +80,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 20),
+
               CustomTextField(
                 controller: emailController,
                 label: "Email or Phone",
                 icon: Icons.person,
               ),
               const SizedBox(height: 12),
+
               CustomTextField(
                 controller: passwordController,
                 label: "Password",
@@ -87,10 +95,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 isPassword: true,
               ),
               const SizedBox(height: 20),
+
               CustomButton(
                 text: isLoading ? "Logging in..." : "Login",
                 onPressed: isLoading ? () {} : doLogin,
               ),
+
               Center(
                 child: TextButton(
                   onPressed: () {
@@ -110,14 +120,15 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
+
               const SizedBox(height: 7),
+
               TextButton(
                 onPressed: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => const RegisterScreen(),
-                    ),
+                        builder: (_) => const RegisterScreen()),
                   );
                 },
                 child: const Text("Create Account"),
