@@ -94,12 +94,12 @@ class ApiService {
   // ======================================================
 
   // Step 1
-  static Future<bool> sendResetOtp(String email) async {
+  static Future<bool> sendResetOtp(String input) async {
     try {
       final response = await dio.post(
         ApiEndpoints.forgotPassword,
         data: FormData.fromMap({
-          "email": email,
+          "input": input,   // 🔥 MUST MATCH PHP
         }),
       );
 
