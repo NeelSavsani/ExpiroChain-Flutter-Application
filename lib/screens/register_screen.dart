@@ -33,6 +33,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   bool isLoading = false;
 
+  // ================= ORGANIZATION TYPE =================
+  String? selectedOrgType; // ✅ NULL by default
+
+  // ================= PHONE NORMALIZER =================
+  String normalizeIndianPhone(String input) {
+    final digitsOnly = input.replaceAll(RegExp(r'\D'), '');
+
+    if (digitsOnly.length > 10) {
+      return digitsOnly.substring(digitsOnly.length - 10);
+    }
+
+    return digitsOnly;
+  }
+
   // ================= FILE PICKER =================
   Future<void> pickFile(Function(File) onPicked) async {
     final result = await FilePicker.platform.pickFiles(
@@ -77,6 +91,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   // ================= SEND OTP =================
   Future<void> sendOtp() async {
+    // ✅ DROPDOWN VALIDATION
+    if (selectedOrgType == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please select organization type")),
+      );
+      return;
+    }
+
     if (gstFile == null || dl1File == null || dl2File == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please select all documents")),
@@ -91,20 +113,29 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
+    final normalizedPhone = normalizeIndianPhone(phoneController.text);
+
+    if (normalizedPhone.length != 10) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Enter valid 10-digit mobile number")),
+      );
+      return;
+    }
+
     setState(() => isLoading = true);
 
     try {
       final result = await ApiService.sendOtpWithFiles(
         fields: {
-          "firm_name": firmController.text,
-          "owner_name": ownerController.text,
-          "user_type": "Medical Store",
-          "email_id": emailController.text,
-          "phn_no": phoneController.text,
-          "gstno": gstNoController.text,
-          "dl1": dl1NoController.text,
-          "dl2": dl2NoController.text,
-          "address": addressController.text,
+          "firm_name": firmController.text.trim(),
+          "owner_name": ownerController.text.trim(),
+          "user_type": selectedOrgType!, // ✅ SAFE NOW
+          "email_id": emailController.text.trim(),
+          "phn_no": normalizedPhone,
+          "gstno": gstNoController.text.trim(),
+          "dl1": dl1NoController.text.trim(),
+          "dl2": dl2NoController.text.trim(),
+          "address": addressController.text.trim(),
           "user_pass": passController.text,
           "re_password": confirmController.text,
         },
@@ -145,46 +176,86 @@ class _RegisterScreenState extends State<RegisterScreen> {
         child: Column(
           children: [
             CustomTextField(
-                controller: firmController,
-                label: "Firm Name",
-                icon: Icons.store),
+              controller: firmController,
+              label: "Firm Name",
+              icon: Icons.store,
+            ),
             const SizedBox(height: 10),
 
             CustomTextField(
-                controller: ownerController,
-                label: "Owner Name",
-                icon: Icons.person),
+              controller: ownerController,
+              label: "Owner Name",
+              icon: Icons.person,
+            ),
+            const SizedBox(height: 10),
+
+            // ================= ORGANIZATION TYPE DROPDOWN =================
+            DropdownButtonFormField<String>(
+              value: selectedOrgType,
+              decoration: InputDecoration(
+                labelText: "Organization Type",
+                hintText: "-- Select Organization Type --",
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                prefixIcon: const Icon(Icons.business),
+              ),
+              items: const [
+                DropdownMenuItem(
+                  value: "medical store",
+                  child: Text("Medical Store"),
+                ),
+                DropdownMenuItem(
+                  value: "clinic",
+                  child: Text("Clinic"),
+                ),
+                DropdownMenuItem(
+                  value: "ngo",
+                  child: Text("NGO"),
+                ),
+              ],
+              onChanged: (value) {
+                setState(() {
+                  selectedOrgType = value;
+                });
+              },
+            ),
             const SizedBox(height: 10),
 
             CustomTextField(
-                controller: emailController,
-                label: "Email",
-                icon: Icons.email),
+              controller: emailController,
+              label: "Email",
+              icon: Icons.email,
+            ),
             const SizedBox(height: 10),
 
             CustomTextField(
-                controller: phoneController,
-                label: "Phone",
-                icon: Icons.phone,
-                keyboardType: TextInputType.phone),
+              controller: phoneController,
+              label: "Phone",
+              icon: Icons.phone,
+              keyboardType: TextInputType.phone,
+            ),
             const SizedBox(height: 10),
 
             CustomTextField(
-                controller: gstNoController,
-                label: "GST Number",
-                icon: Icons.confirmation_number),
+              controller: gstNoController,
+              label: "GST Number",
+              icon: Icons.confirmation_number,
+            ),
             const SizedBox(height: 10),
 
             CustomTextField(
-                controller: dl1NoController,
-                label: "DL1 Number",
-                icon: Icons.badge),
+              controller: dl1NoController,
+              label: "DL1 Number",
+              icon: Icons.badge,
+            ),
             const SizedBox(height: 10),
 
             CustomTextField(
-                controller: dl2NoController,
-                label: "DL2 Number",
-                icon: Icons.badge_outlined),
+              controller: dl2NoController,
+              label: "DL2 Number",
+              icon: Icons.badge_outlined,
+            ),
             const SizedBox(height: 10),
 
             CustomTextField(
