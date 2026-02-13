@@ -2,151 +2,127 @@ import 'package:dio/dio.dart';
 import 'package:dio_cookie_manager/dio_cookie_manager.dart';
 import 'package:cookie_jar/cookie_jar.dart';
 import 'package:path_provider/path_provider.dart';
-
 import 'api_endpoints.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
 
 class ApiService {
-  static final Dio dio = Dio();
-  static PersistCookieJar? _persistCookieJar;
+  // 🔥 CHANGE THIS TO YOUR REAL DOMAIN
+  static const String baseUrl =
+      "https://e98c-2409-40c1-54-3641-2d94-7616-1f74-d6ac.ngrok-free.app/api/";
 
-  // 🔥 Call this ONCE in main.dart with await
-  static Future<void> init() async {
-    final dir = await getApplicationDocumentsDirectory();
-
-    _persistCookieJar = PersistCookieJar(
-      storage: FileStorage("${dir.path}/.cookies/"),
-    );
-
-    dio.interceptors.add(CookieManager(_persistCookieJar!));
-
-    dio.options.connectTimeout = const Duration(seconds: 20);
-    dio.options.receiveTimeout = const Duration(seconds: 20);
-    dio.options.validateStatus = (status) => true;
-  }
-
-  // ======================================================
-  // ================== LOGIN =============================
-  // ======================================================
+  // ================= LOGIN =================
   static Future<Map<String, dynamic>> login(
-      String username, String password) async {
-    final response = await dio.post(
-      ApiEndpoints.login,
-      data: FormData.fromMap({
-        "username": username,   // ✅ MUST MATCH PHP
-        "user_pass": password,  // ✅ MUST MATCH PHP
-      }),
+      String email, String password) async {
+
+    final response = await http.post(
+      Uri.parse("$baseUrl/login.php"),
+      body: {
+        "username": email,
+        "user_pass": password,
+      },
     );
 
-    print("LOGIN RESPONSE: ${response.data}");
-
-    return Map<String, dynamic>.from(response.data);
+    return jsonDecode(response.body);
   }
 
-
-  // ======================================================
-  // ========== REGISTER WITH FILES (OTP) =================
-  // ======================================================
+  // ================= REGISTER SEND OTP =================
   static Future<Map<String, dynamic>> sendOtpWithFiles({
-    required Map<String, dynamic> fields,
+    required Map<String, String> fields,
     required Map<String, dynamic> files,
   }) async {
-    final formData = FormData.fromMap(fields);
 
-    for (var entry in files.entries) {
-      if (entry.value != null) {
-        formData.files.add(
-          MapEntry(
-            entry.key,
-            await MultipartFile.fromFile(entry.value.path),
+    var request = http.MultipartRequest(
+      "POST",
+      Uri.parse("$baseUrl/send_otp.php"),
+    );
+
+    request.fields.addAll(fields);
+
+    files.forEach((key, file) async {
+      if (file != null) {
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            key,
+            file.path,
           ),
         );
       }
-    }
+    });
 
-    final response = await dio.post(
-      ApiEndpoints.sendOtp, // 🔥 MUST MATCH YOUR send_otp.php
-      data: formData,
+    var streamedResponse = await request.send();
+    var response = await http.Response.fromStream(streamedResponse);
+
+    return jsonDecode(response.body);
+  }
+
+  // ================= VERIFY OTP =================
+  static Future<Map<String, dynamic>> verifyOtp(
+      String otp) async {
+
+    final response = await http.post(
+      Uri.parse("$baseUrl/verify_otp.php"),
+      body: {"otp": otp},
     );
 
-    print("REGISTER SEND OTP: ${response.data}");
-
-    return Map<String, dynamic>.from(response.data);
+    return jsonDecode(response.body);
   }
 
-  // ======================================================
-  // ================ VERIFY REGISTER OTP =================
-  // ======================================================
-  static Future<Map<String, dynamic>> verifyOtp(String otp) async {
-    final response = await dio.post(
-      ApiEndpoints.verifyOtp,
-      data: FormData.fromMap({
-        "otp": otp,
-      }),
+  // ================= SEND RESET OTP =================
+  static Future<bool> sendResetOtp(String identity) async {
+    final response = await http.post(
+      Uri.parse("$baseUrl/send_reset_otp.php"),
+      body: {"user_identity": identity},
     );
 
-    print("VERIFY REGISTER OTP: ${response.data}");
-
-    return Map<String, dynamic>.from(response.data);
+    final data = jsonDecode(response.body);
+    return data["status"] == "success";
   }
 
-  // ======================================================
-  // ============ FORGOT PASSWORD (SESSION) ===============
-  // ======================================================
-
-  // Step 1
-  static Future<bool> sendResetOtp(String input) async {
-    try {
-      final response = await dio.post(
-        ApiEndpoints.forgotPassword,
-        data: FormData.fromMap({
-          "input": input,   // 🔥 MUST MATCH PHP
-        }),
-      );
-
-      print("SEND RESET OTP: ${response.data}");
-
-      return response.data['status'] == 'success';
-    } catch (e) {
-      print("ERROR sendResetOtp: $e");
-      return false;
-    }
-  }
-
-  // Step 2
+  // ================= VERIFY RESET OTP =================
   static Future<bool> verifyResetOtp(String otp) async {
-    try {
-      final response = await dio.post(
-        ApiEndpoints.verifyResetOtp,
-        data: FormData.fromMap({
-          "otp": otp,
-        }),
-      );
+    final response = await http.post(
+      Uri.parse("$baseUrl/verify_reset_otp.php"),
+      body: {"otp": otp},
+    );
 
-      print("VERIFY RESET OTP: ${response.data}");
-
-      return response.data['status'] == 'success';
-    } catch (e) {
-      print("ERROR verifyResetOtp: $e");
-      return false;
-    }
+    final data = jsonDecode(response.body);
+    return data["status"] == "success";
   }
 
-  // Step 3
+  // ================= RESET PASSWORD =================
   static Future<bool> resetPassword(String newPassword) async {
-    try {
-      final response = await dio.post(
-        ApiEndpoints.resetPassword,
-        data: FormData.fromMap({
-          "new_password": newPassword, // MUST MATCH PHP
-        }),
-      );
+    final response = await http.post(
+      Uri.parse("$baseUrl/reset_password.php"),
+      body: {
+        "new_password": newPassword,
+        "confirm_password": newPassword,
+      },
+    );
 
-      print("RESET PASSWORD RESPONSE: ${response.data}");
+    final data = jsonDecode(response.body);
+    return data["status"] == "success";
+  }
 
-      return response.data['status'] == 'success';
-    } catch (e) {
-      print("ERROR resetPassword: $e");
-      return false;
-    }
+  // ====================================================
+  // 🔥🔥🔥 ACCOUNT DETAILS API (NEW)
+  // ====================================================
+  static Future<Map<String, dynamic>> getAccountDetails(
+      String email) async {
+
+    final response = await http.post(
+      Uri.parse("${baseUrl}get_account_details.php"),
+      body: {
+        "email": email,
+      },
+    );
+
+    print("RAW RESPONSE:");
+    print(response.body);   // 👈 ADD THIS
+    print("CALLING URL: ${baseUrl}get_account_details.php");
+
+
+    return jsonDecode(response.body);
   }
 }

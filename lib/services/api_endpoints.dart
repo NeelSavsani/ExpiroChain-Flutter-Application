@@ -1,7 +1,7 @@
 class ApiEndpoints {
   // 🔴 CHANGE THIS TO YOUR REAL BASE URL
   static const String baseUrl =
-      "https://5d73fd3134c9.ngrok-free.app/api";
+      "https://e98c-2409-40c1-54-3641-2d94-7616-1f74-d6ac.ngrok-free.app/api/";
 
   // ---------------- AUTH ----------------
   // static const String login =

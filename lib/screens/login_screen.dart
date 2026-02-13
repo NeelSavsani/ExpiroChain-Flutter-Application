@@ -3,7 +3,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../services/api_service.dart';
 import '../widgets/custom_textfield.dart';
-import '../widgets/custom_button.dart';
 import 'forgot_password_screen.dart';
 import 'register_screen.dart';
 import 'home_screen.dart';
@@ -23,10 +22,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> doLogin() async {
     FocusScope.of(context).unfocus();
-    await Future.delayed(const Duration(milliseconds: 100));
 
-    final email = emailController.text.replaceAll('\u200B', '').trim();
-    final pass = passwordController.text.replaceAll('\u200B', '').trim();
+    final email = emailController.text.trim();
+    final pass = passwordController.text.trim();
 
     if (email.isEmpty || pass.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -43,10 +41,10 @@ class _LoginScreenState extends State<LoginScreen> {
       if (result['status'] == 'success') {
         final firmName = result['user']['firm_name'];
 
-        // Save login state
         final prefs = await SharedPreferences.getInstance();
         await prefs.setBool('isLoggedIn', true);
         await prefs.setString('firmName', firmName);
+        await prefs.setString('email', email);
 
         if (!mounted) return;
 
@@ -58,9 +56,7 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(result['message'] ?? "Login failed"),
-          ),
+          SnackBar(content: Text(result['message'] ?? "Login failed")),
         );
       }
     } catch (e) {
@@ -68,135 +64,198 @@ class _LoginScreenState extends State<LoginScreen> {
         SnackBar(content: Text("Error: $e")),
       );
     } finally {
-      if (mounted) {
-        setState(() => isLoading = false);
-      }
+      if (mounted) setState(() => isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Color(0xFF1565C0),
-              Color(0xFF42A5F5),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+      backgroundColor: const Color(0xFFF4F6FB),
+
+      // ================= APP BAR (NO ARROW) =================
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 2,
+        centerTitle: true,
+        automaticallyImplyLeading: false, // 🚫 removes arrow
+        title: const Text(
+          "EXPIROCHAIN",
+          style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1,
           ),
         ),
-        child: Center(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Card(
-                elevation: 12,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18),
+      ),
+
+      // ================= BODY =================
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            const SizedBox(height: 40),
+
+            const Text(
+              "Welcome Back",
+              style: TextStyle(
+                fontSize: 34,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1F2937),
+              ),
+            ),
+            const SizedBox(height: 6),
+            const Text(
+              "Sign in to continue",
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey,
+              ),
+            ),
+
+            const SizedBox(height: 40),
+
+            Center(
+              child: Container(
+                width: 450,
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 40, vertical: 40),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: const [
+                    BoxShadow(
+                      blurRadius: 25,
+                      color: Colors.black12,
+                    )
+                  ],
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.lock_outline,
-                        size: 60,
-                        color: Color(0xFF1565C0),
-                      ),
-                      const SizedBox(height: 12),
+                child: Column(
+                  children: [
 
-                      const Text(
-                        "EXPIROCHAIN",
-                        style: TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF1565C0),
+                    CustomTextField(
+                      controller: emailController,
+                      label: "Email or Phone Number",
+                      icon: Icons.person,
+                    ),
+                    const SizedBox(height: 20),
+
+                    CustomTextField(
+                      controller: passwordController,
+                      label: "Password",
+                      icon: Icons.lock,
+                      isPassword: true,
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    // FORGOT PASSWORD CENTERED (LESS SPACE)
+                    Center(
+                      child: TextButton(
+                        style: TextButton.styleFrom(
+                          padding: EdgeInsets.zero,
+                          minimumSize: const Size(0, 0),
+                          tapTargetSize:
+                          MaterialTapTargetSize.shrinkWrap,
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      const Text(
-                        "Secure Login",
-                        style: TextStyle(color: Colors.grey),
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      CustomTextField(
-                        controller: emailController,
-                        label: "Email or Phone",
-                        icon: Icons.person,
-                      ),
-                      const SizedBox(height: 14),
-
-                      CustomTextField(
-                        controller: passwordController,
-                        label: "Password",
-                        icon: Icons.lock,
-                        isPassword: true,
-                      ),
-                      const SizedBox(height: 24),
-
-                      SizedBox(
-                        width: double.infinity,
-                        child: CustomButton(
-                          text: isLoading ? "Logging in..." : "Login",
-                          onPressed: isLoading ? () {} : doLogin,
-                        ),
-                      ),
-
-                      if (isLoading) ...[
-                        const SizedBox(height: 14),
-                        const CircularProgressIndicator(strokeWidth: 2),
-                      ],
-
-                      const SizedBox(height: 10),
-
-                      TextButton(
                         onPressed: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => const ForgotPasswordScreen(),
+                              builder: (_) =>
+                              const ForgotPasswordScreen(),
                             ),
                           );
                         },
                         child: const Text(
                           "Forgot Password?",
                           style: TextStyle(
-                            color: Color(0xFF1565C0),
-                            fontWeight: FontWeight.w500,
+                            color: Color(0xFF2563EB),
+                            fontSize: 15,
                           ),
                         ),
                       ),
+                    ),
 
-                      const Divider(height: 24),
+                    const SizedBox(height: 16),
 
-                      TextButton(
+                    // LOGIN BUTTON (PRIMARY)
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          padding:
+                          const EdgeInsets.symmetric(
+                              vertical: 16),
+                          backgroundColor:
+                          const Color(0xFF2563EB),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius:
+                            BorderRadius.circular(10),
+                          ),
+                        ),
+                        onPressed:
+                        isLoading ? null : doLogin,
+                        child: Text(
+                          isLoading
+                              ? "Logging in..."
+                              : "Login",
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    // CREATE NEW ACCOUNT (SMALLER)
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          padding:
+                          const EdgeInsets.symmetric(
+                              vertical: 12),
+                          side: const BorderSide(
+                            color: Color(0xFF2563EB),
+                            width: 2,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius:
+                            BorderRadius.circular(10),
+                          ),
+                        ),
                         onPressed: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => const RegisterScreen(),
+                              builder: (_) =>
+                              const RegisterScreen(),
                             ),
                           );
                         },
                         child: const Text(
                           "Create New Account",
-                          style: TextStyle(fontWeight: FontWeight.w600),
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF2563EB),
+                          ),
                         ),
                       ),
+                    ),
+
+                    if (isLoading) ...[
+                      const SizedBox(height: 14),
+                      const CircularProgressIndicator(),
                     ],
-                  ),
+                  ],
                 ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );

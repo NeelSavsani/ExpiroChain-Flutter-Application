@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 
 import '../widgets/custom_textfield.dart';
-import '../widgets/custom_button.dart';
 import '../services/api_service.dart';
 import 'otp_screen.dart';
+import 'login_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -19,12 +19,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final ownerController = TextEditingController();
   final emailController = TextEditingController();
   final phoneController = TextEditingController();
-
   final gstNoController = TextEditingController();
   final dl1NoController = TextEditingController();
   final dl2NoController = TextEditingController();
   final addressController = TextEditingController();
-
   final passController = TextEditingController();
   final confirmController = TextEditingController();
 
@@ -35,7 +33,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool isLoading = false;
   String? selectedOrgType;
 
-  // ================= PHONE NORMALIZER =================
   String normalizeIndianPhone(String input) {
     final digitsOnly = input.replaceAll(RegExp(r'\D'), '');
     if (digitsOnly.length > 10) {
@@ -44,60 +41,89 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return digitsOnly;
   }
 
-  // ================= FILE PICKER =================
   Future<void> pickFile(Function(File) onPicked) async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.image,
-    );
+    final result =
+    await FilePicker.platform.pickFiles(type: FileType.any);
 
     if (result != null && result.files.single.path != null) {
       onPicked(File(result.files.single.path!));
     }
   }
 
-  // ================= FILE TILE =================
-  Widget buildFilePickerTile({
+  Widget buildUploadBox({
     required String label,
     required File? file,
     required VoidCallback onPick,
     required VoidCallback onClear,
   }) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ListTile(
-        leading: const Icon(Icons.upload_file, color: Color(0xFF1565C0)),
-        title: Text(
-          file == null ? label : file.path.split('/').last,
-          style: TextStyle(
-            color: file == null ? Colors.grey[600] : Colors.black,
-            fontWeight: file == null ? FontWeight.normal : FontWeight.w600,
+    return GestureDetector(
+      onTap: onPick,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 22),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: file == null
+                ? Colors.grey.shade400
+                : const Color(0xFF2563EB),
+            width: 2,
           ),
         ),
-        subtitle: file != null ? const Text("Tap to change file") : null,
-        trailing: file == null
-            ? const Icon(Icons.attach_file)
-            : IconButton(
-          icon: const Icon(Icons.close, color: Colors.red),
-          onPressed: onClear,
+        child: Stack(
+          children: [
+            Center(
+              child: Column(
+                children: [
+                  Icon(
+                    file == null
+                        ? Icons.upload_file_outlined
+                        : Icons.check_circle,
+                    size: 28,
+                    color: file == null
+                        ? Colors.grey
+                        : const Color(0xFF2563EB),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    file == null
+                        ? label
+                        : file.path.split('/').last,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: file == null
+                          ? FontWeight.normal
+                          : FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (file != null)
+              Positioned(
+                right: 8,
+                top: 0,
+                child: IconButton(
+                  icon: const Icon(Icons.close,
+                      color: Colors.red),
+                  onPressed: onClear,
+                ),
+              ),
+          ],
         ),
-        onTap: onPick,
       ),
     );
   }
 
-  // ================= SEND OTP =================
   Future<void> sendOtp() async {
-    if (selectedOrgType == null) {
+    if (selectedOrgType == null ||
+        gstFile == null ||
+        dl1File == null ||
+        dl2File == null ||
+        passController.text.isEmpty ||
+        confirmController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please select organization type")),
-      );
-      return;
-    }
-
-    if (gstFile == null || dl1File == null || dl2File == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please select all documents")),
+        const SnackBar(content: Text("All fields are required")),
       );
       return;
     }
@@ -109,10 +135,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
-    final normalizedPhone = normalizeIndianPhone(phoneController.text);
+    final normalizedPhone =
+    normalizeIndianPhone(phoneController.text);
+
     if (normalizedPhone.length != 10) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Enter valid 10-digit mobile number")),
+        const SnackBar(content: Text("Invalid mobile number")),
       );
       return;
     }
@@ -151,205 +179,192 @@ class _RegisterScreenState extends State<RegisterScreen> {
           SnackBar(content: Text(result['message'] ?? "OTP failed")),
         );
       }
-    } catch (e) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("Error: $e")));
     } finally {
-      if (mounted) {
-        setState(() => isLoading = false);
-      }
+      if (mounted) setState(() => isLoading = false);
     }
   }
 
-  // ================= UI =================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF1565C0), Color(0xFF42A5F5)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+      backgroundColor: const Color(0xFFF4F6FB),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 2,
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back,
+              color: Colors.black),
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => const LoginScreen()),
+            );
+          },
         ),
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Card(
-                elevation: 12,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    children: [
-                      const Icon(Icons.person_add_alt_1,
-                          size: 60, color: Color(0xFF1565C0)),
-                      const SizedBox(height: 12),
+        title: const Text(
+          "Register",
+          style: TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.bold),
+        ),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          children: [
 
-                      const Text(
-                        "Create Account",
-                        style: TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF1565C0),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
+            CustomTextField(
+              controller: firmController,
+              label: "Firm Name",
+              icon: Icons.store,
+            ),
+            const SizedBox(height: 22),
 
-                      CustomTextField(
-                        controller: firmController,
-                        label: "Firm Name",
-                        icon: Icons.store,
-                      ),
-                      const SizedBox(height: 12),
+            CustomTextField(
+              controller: ownerController,
+              label: "Owner Name",
+              icon: Icons.person,
+            ),
+            const SizedBox(height: 22),
 
-                      CustomTextField(
-                        controller: ownerController,
-                        label: "Owner Name",
-                        icon: Icons.person,
-                      ),
-                      const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              value: selectedOrgType,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: "Organization Type",
+              ),
+              items: const [
+                DropdownMenuItem(
+                    value: "medical store",
+                    child: Text("Medical Store")),
+                DropdownMenuItem(
+                    value: "clinic",
+                    child: Text("Clinic")),
+                DropdownMenuItem(
+                    value: "ngo",
+                    child: Text("NGO")),
+              ],
+              onChanged: (val) =>
+                  setState(() => selectedOrgType = val),
+            ),
+            const SizedBox(height: 22),
 
-                      DropdownButtonFormField<String>(
-                        value: selectedOrgType,
-                        decoration: InputDecoration(
-                          labelText: "Organization Type",
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          prefixIcon: const Icon(Icons.business),
-                        ),
-                        items: const [
-                          DropdownMenuItem(
-                            value: "medical store",
-                            child: Text("Medical Store"),
-                          ),
-                          DropdownMenuItem(
-                            value: "clinic",
-                            child: Text("Clinic"),
-                          ),
-                          DropdownMenuItem(
-                            value: "ngo",
-                            child: Text("NGO"),
-                          ),
-                        ],
-                        onChanged: (value) {
-                          setState(() => selectedOrgType = value);
-                        },
-                      ),
-                      const SizedBox(height: 12),
+            CustomTextField(
+              controller: emailController,
+              label: "Email Address",
+              icon: Icons.email,
+            ),
+            const SizedBox(height: 22),
 
-                      CustomTextField(
-                        controller: emailController,
-                        label: "Email",
-                        icon: Icons.email,
-                      ),
-                      const SizedBox(height: 12),
+            CustomTextField(
+              controller: phoneController,
+              label: "Mobile Number",
+              icon: Icons.phone,
+            ),
+            const SizedBox(height: 22),
 
-                      CustomTextField(
-                        controller: phoneController,
-                        label: "Phone",
-                        icon: Icons.phone,
-                        keyboardType: TextInputType.phone,
-                      ),
-                      const SizedBox(height: 12),
+            CustomTextField(
+              controller: gstNoController,
+              label: "GST Number",
+              icon: Icons.badge,
+            ),
+            const SizedBox(height: 22),
 
-                      CustomTextField(
-                        controller: gstNoController,
-                        label: "GST Number",
-                        icon: Icons.confirmation_number,
-                      ),
-                      const SizedBox(height: 12),
+            buildUploadBox(
+              label: "Upload GST Certificate",
+              file: gstFile,
+              onPick: () =>
+                  pickFile((f) => setState(() => gstFile = f)),
+              onClear: () => setState(() => gstFile = null),
+            ),
+            const SizedBox(height: 22),
 
-                      CustomTextField(
-                        controller: dl1NoController,
-                        label: "DL1 Number",
-                        icon: Icons.badge,
-                      ),
-                      const SizedBox(height: 12),
+            CustomTextField(
+              controller: addressController,
+              label: "Address",
+              icon: Icons.location_on,
+              maxLines: 3,
+            ),
+            const SizedBox(height: 22),
 
-                      CustomTextField(
-                        controller: dl2NoController,
-                        label: "DL2 Number",
-                        icon: Icons.badge_outlined,
-                      ),
-                      const SizedBox(height: 12),
+            CustomTextField(
+              controller: dl1NoController,
+              label: "Drug License 1",
+              icon: Icons.badge,
+            ),
+            const SizedBox(height: 22),
 
-                      CustomTextField(
-                        controller: addressController,
-                        label: "Complete Address",
-                        icon: Icons.location_on,
-                        maxLines: 3,
-                      ),
-                      const SizedBox(height: 12),
+            buildUploadBox(
+              label: "Upload Drug License 1",
+              file: dl1File,
+              onPick: () =>
+                  pickFile((f) => setState(() => dl1File = f)),
+              onClear: () => setState(() => dl1File = null),
+            ),
+            const SizedBox(height: 22),
 
-                      CustomTextField(
-                        controller: passController,
-                        label: "Password",
-                        icon: Icons.lock,
-                        isPassword: true,
-                      ),
-                      const SizedBox(height: 12),
+            CustomTextField(
+              controller: dl2NoController,
+              label: "Drug License 2",
+              icon: Icons.badge,
+            ),
+            const SizedBox(height: 22),
 
-                      CustomTextField(
-                        controller: confirmController,
-                        label: "Confirm Password",
-                        icon: Icons.lock_outline,
-                        isPassword: true,
-                      ),
-                      const SizedBox(height: 20),
+            buildUploadBox(
+              label: "Upload Drug License 2",
+              file: dl2File,
+              onPick: () =>
+                  pickFile((f) => setState(() => dl2File = f)),
+              onClear: () => setState(() => dl2File = null),
+            ),
+            const SizedBox(height: 22),
 
-                      buildFilePickerTile(
-                        label: "Upload GST Certificate",
-                        file: gstFile,
-                        onPick: () =>
-                            pickFile((f) => setState(() => gstFile = f)),
-                        onClear: () => setState(() => gstFile = null),
-                      ),
-                      const SizedBox(height: 8),
+            CustomTextField(
+              controller: passController,
+              label: "Password",
+              icon: Icons.lock,
+              isPassword: true,
+            ),
+            const SizedBox(height: 22),
 
-                      buildFilePickerTile(
-                        label: "Upload DL1 Certificate",
-                        file: dl1File,
-                        onPick: () =>
-                            pickFile((f) => setState(() => dl1File = f)),
-                        onClear: () => setState(() => dl1File = null),
-                      ),
-                      const SizedBox(height: 8),
+            CustomTextField(
+              controller: confirmController,
+              label: "Confirm Password",
+              icon: Icons.lock_outline,
+              isPassword: true,
+            ),
+            const SizedBox(height: 30),
 
-                      buildFilePickerTile(
-                        label: "Upload DL2 Certificate",
-                        file: dl2File,
-                        onPick: () =>
-                            pickFile((f) => setState(() => dl2File = f)),
-                        onClear: () => setState(() => dl2File = null),
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      SizedBox(
-                        width: double.infinity,
-                        child: CustomButton(
-                          text:
-                          isLoading ? "Sending OTP..." : "Send OTP",
-                          onPressed: isLoading ? () {} : sendOtp,
-                        ),
-                      ),
-
-                      if (isLoading) ...[
-                        const SizedBox(height: 14),
-                        const CircularProgressIndicator(strokeWidth: 2),
-                      ],
-                    ],
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  padding:
+                  const EdgeInsets.symmetric(vertical: 16),
+                  backgroundColor:
+                  const Color(0xFF2563EB),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius:
+                    BorderRadius.circular(10),
                   ),
+                ),
+                onPressed:
+                isLoading ? null : sendOtp,
+                child: Text(
+                  isLoading
+                      ? "Processing..."
+                      : "Register",
+                  style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white),
                 ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );
