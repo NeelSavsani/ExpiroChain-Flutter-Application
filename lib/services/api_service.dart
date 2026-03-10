@@ -17,4 +17,14 @@ class ApiService {
 
     return jsonDecode(response.body);
   }
+
+  static Future<Map<String, dynamic>> getAccount(int userId) async {
+
+    final response = await http.get(
+      Uri.parse("${ApiConfig.baseUrl}/get_account.php?user_id=$userId"),
+    );
+
+    return jsonDecode(response.body);
+
+  }
 }
