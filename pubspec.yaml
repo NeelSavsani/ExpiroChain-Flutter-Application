@@ -13,7 +13,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  http: ^0.13.6
+  http: ^1.6.0
 
   # Networking & Storage
   dio: ^5.9.0

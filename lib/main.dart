@@ -1,41 +1,46 @@
 import 'package:flutter/material.dart';
+
 import 'screens/login_screen.dart';
-import 'screens/home_screen.dart';
-import 'services/api_service.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'screens/dashboard_screen.dart';
+import 'screens/products_screen.dart';
+import 'screens/add_product_screen.dart';
+import 'screens/account_screen.dart';
+import 'screens/reports_screen.dart';
+import 'screens/stock_screen.dart';
+import 'screens/expiry_tracker_screen.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  // await ApiService.init(); // 🔥 MUST await
-
-  final prefs = await SharedPreferences.getInstance();
-  final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
-  final firmName = prefs.getString('firmName') ?? '';
-
-  runApp(MyApp(
-    isLoggedIn: isLoggedIn,
-    firmName: firmName,
-  ));
+void main() {
+  runApp(const ExpiroChainApp());
 }
 
-class MyApp extends StatelessWidget {
-  final bool isLoggedIn;
-  final String firmName;
-
-  const MyApp({
-    super.key,
-    required this.isLoggedIn,
-    required this.firmName,
-  });
+class ExpiroChainApp extends StatelessWidget {
+  const ExpiroChainApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'EXPIROCHAIN',
       debugShowCheckedModeBanner: false,
-      home: isLoggedIn
-          ? HomeScreen(firmName: firmName)
-          : const LoginScreen(),
+      title: "EXPIROCHAIN",
+
+      theme: ThemeData(
+        primaryColor: const Color(0xFF0F172A),
+        scaffoldBackgroundColor: const Color(0xFFF4F6F9),
+        fontFamily: 'Segoe UI',
+      ),
+
+      initialRoute: "/",
+
+      routes: {
+
+        "/": (context) => const LoginScreen(),
+        "/dashboard": (context) => const DashboardScreen(),
+        "/add-product": (context) => const AddProductScreen(),
+        "/products": (context) => const ProductsScreen(),
+        "/stock": (context) => const StockScreen(),
+        "/expiry": (context) => const ExpiryTrackerScreen(),
+        "/reports": (context) => const ReportsScreen(),
+        "/account": (context) => const AccountScreen(),
+      },
     );
   }
 }

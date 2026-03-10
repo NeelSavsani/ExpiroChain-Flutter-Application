@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../services/api_service.dart';
+import '../widgets/sidebar.dart';
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
@@ -11,88 +11,80 @@ class AccountScreen extends StatefulWidget {
 
 class _AccountScreenState extends State<AccountScreen> {
 
-  Map<String, dynamic>? userData;
-  bool isLoading = true;
+  String firmName = "";
 
   @override
   void initState() {
     super.initState();
-    loadData();
+    loadFirmName();
   }
 
-  Future<void> loadData() async {
-    try {
+  void loadFirmName() async {
 
-      // 🔥 GET SAVED EMAIL
-      final prefs = await SharedPreferences.getInstance();
-      final email = prefs.getString('email') ?? '';
+    final prefs = await SharedPreferences.getInstance();
 
-      print("Saved Email: $email");
+    setState(() {
+      firmName = prefs.getString("firm_name") ?? "";
+    });
 
-      if (email.isEmpty) {
-        setState(() => isLoading = false);
-        return;
-      }
-
-      final result = await ApiService.getAccountDetails(email);
-
-      print("API Response: $result"); // 🔥 ALSO ADD THIS
-
-      if (!mounted) return;
-
-      if (result['status'] == 'success') {
-        setState(() {
-          userData = result['data'];
-          isLoading = false;
-        });
-      } else {
-        setState(() => isLoading = false);
-      }
-
-    } catch (e) {
-      print("Error: $e"); // 🔥 ADD THIS TOO
-      if (!mounted) return;
-      setState(() => isLoading = false);
-    }
-  }
-
-  Widget buildTile(String title, String value) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      child: ListTile(
-        title: Text(title),
-        subtitle: Text(value.isEmpty ? "Not available" : value),
-      ),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
 
     return Scaffold(
+
       appBar: AppBar(
-        title: const Text("Account Details"),
+        title: const Text(
+          "EXPIROCHAIN",
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: const Color(0xFF0f172a),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : userData == null
-          ? const Center(child: Text("No data found"))
-          : SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
 
-            buildTile("Firm Name", userData!['firm_name'] ?? ''),
-            buildTile("Owner Name", userData!['owner_name'] ?? ''),
-            buildTile("Email", userData!['email_id'] ?? ''),
-            buildTile("Mobile", userData!['phn_no'] ?? ''),
-            buildTile("Address", userData!['address'] ?? ''),
-            buildTile("GST Number", userData!['gstno'] ?? ''),
-            buildTile("DL1", userData!['dl1'] ?? ''),
-            buildTile("DL2", userData!['dl2'] ?? ''),
-            buildTile("User Type", userData!['user_type'] ?? ''),
+      drawer: const Sidebar(currentRoute: "/account"),
 
-          ],
+      body: Container(
+        width: double.infinity,
+        color: const Color(0xFFF4F6F9),
+        padding: const EdgeInsets.all(20),
+
+        child: Card(
+          elevation: 3,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+
+                const Text(
+                  "Account",
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF0f172a),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                Text(
+                  "Firm Name: $firmName",
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Color(0xFF334155),
+                  ),
+                ),
+
+              ],
+            ),
+          ),
         ),
       ),
     );

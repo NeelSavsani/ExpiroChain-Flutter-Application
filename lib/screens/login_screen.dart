@@ -1,11 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import '../services/api_service.dart';
-import '../widgets/custom_textfield.dart';
-import 'forgot_password_screen.dart';
-import 'register_screen.dart';
-import 'home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -15,247 +10,97 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final emailController = TextEditingController();
+
+  final usernameController = TextEditingController();
   final passwordController = TextEditingController();
 
-  bool isLoading = false;
+  bool loading = false;
 
-  Future<void> doLogin() async {
-    FocusScope.of(context).unfocus();
+  void login() async {
 
-    final email = emailController.text.trim();
-    final pass = passwordController.text.trim();
+    setState(() {
+      loading = true;
+    });
 
-    if (email.isEmpty || pass.isEmpty) {
+    final result = await ApiService.login(
+      usernameController.text,
+      passwordController.text,
+    );
+
+    if (result["status"] == "success") {
+
+      String firmName = result["firm_name"];
+      int userId = int.parse(result["user_id"].toString());
+
+      final prefs = await SharedPreferences.getInstance();
+
+      await prefs.setString("firm_name", firmName);
+      await prefs.setInt("user_id", userId);
+
+      Navigator.pushReplacementNamed(context, "/dashboard");
+
+    } else {
+
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Fill all fields")),
+        const SnackBar(content: Text("Login failed")),
       );
-      return;
+
     }
 
-    setState(() => isLoading = true);
+    setState(() {
+      loading = false;
+    });
 
-    try {
-      final result = await ApiService.login(email, pass);
-
-      if (result['status'] == 'success') {
-        final firmName = result['user']['firm_name'];
-
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setBool('isLoggedIn', true);
-        await prefs.setString('firmName', firmName);
-        await prefs.setString('email', email);
-
-        if (!mounted) return;
-
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) => HomeScreen(firmName: firmName),
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result['message'] ?? "Login failed")),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e")),
-      );
-    } finally {
-      if (mounted) setState(() => isLoading = false);
-    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF4F6FB),
 
-      // ================= APP BAR (NO ARROW) =================
+    return Scaffold(
+
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 2,
-        centerTitle: true,
-        automaticallyImplyLeading: false, // 🚫 removes arrow
-        title: const Text(
-          "EXPIROCHAIN",
-          style: TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1,
-          ),
-        ),
+        title: const Text("EXPIROCHAIN"),
+        backgroundColor: const Color(0xFF0f172a),
       ),
 
-      // ================= BODY =================
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            const SizedBox(height: 40),
+      body: Center(
 
-            const Text(
-              "Welcome Back",
-              style: TextStyle(
-                fontSize: 34,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1F2937),
-              ),
-            ),
-            const SizedBox(height: 6),
-            const Text(
-              "Sign in to continue",
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey,
-              ),
-            ),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
 
-            const SizedBox(height: 40),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
 
-            Center(
-              child: Container(
-                width: 450,
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 40, vertical: 40),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: const [
-                    BoxShadow(
-                      blurRadius: 25,
-                      color: Colors.black12,
-                    )
-                  ],
-                ),
-                child: Column(
-                  children: [
+            children: [
 
-                    CustomTextField(
-                      controller: emailController,
-                      label: "Email or Phone Number",
-                      icon: Icons.person,
-                    ),
-                    const SizedBox(height: 20),
-
-                    CustomTextField(
-                      controller: passwordController,
-                      label: "Password",
-                      icon: Icons.lock,
-                      isPassword: true,
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    // FORGOT PASSWORD CENTERED (LESS SPACE)
-                    Center(
-                      child: TextButton(
-                        style: TextButton.styleFrom(
-                          padding: EdgeInsets.zero,
-                          minimumSize: const Size(0, 0),
-                          tapTargetSize:
-                          MaterialTapTargetSize.shrinkWrap,
-                        ),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) =>
-                              const ForgotPasswordScreen(),
-                            ),
-                          );
-                        },
-                        child: const Text(
-                          "Forgot Password?",
-                          style: TextStyle(
-                            color: Color(0xFF2563EB),
-                            fontSize: 15,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // LOGIN BUTTON (PRIMARY)
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          padding:
-                          const EdgeInsets.symmetric(
-                              vertical: 16),
-                          backgroundColor:
-                          const Color(0xFF2563EB),
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius:
-                            BorderRadius.circular(10),
-                          ),
-                        ),
-                        onPressed:
-                        isLoading ? null : doLogin,
-                        child: Text(
-                          isLoading
-                              ? "Logging in..."
-                              : "Login",
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    // CREATE NEW ACCOUNT (SMALLER)
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton(
-                        style: OutlinedButton.styleFrom(
-                          padding:
-                          const EdgeInsets.symmetric(
-                              vertical: 12),
-                          side: const BorderSide(
-                            color: Color(0xFF2563EB),
-                            width: 2,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius:
-                            BorderRadius.circular(10),
-                          ),
-                        ),
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) =>
-                              const RegisterScreen(),
-                            ),
-                          );
-                        },
-                        child: const Text(
-                          "Create New Account",
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF2563EB),
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    if (isLoading) ...[
-                      const SizedBox(height: 14),
-                      const CircularProgressIndicator(),
-                    ],
-                  ],
+              TextField(
+                controller: usernameController,
+                decoration: const InputDecoration(
+                  labelText: "Email / Phone",
                 ),
               ),
-            ),
-          ],
+
+              const SizedBox(height: 10),
+
+              TextField(
+                controller: passwordController,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: "Password",
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              ElevatedButton(
+                onPressed: loading ? null : login,
+                child: loading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text("Login"),
+              )
+
+            ],
+          ),
         ),
       ),
     );
