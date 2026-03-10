@@ -27,4 +27,24 @@ class ApiService {
     return jsonDecode(response.body);
 
   }
+
+  static Future<Map<String, dynamic>> getProducts(int userId) async {
+
+    final url = "${ApiConfig.getProducts}?user_id=$userId";
+
+    print("Calling API:");
+    print(url);
+
+    final response = await http.get(Uri.parse(url));
+
+    print("Status Code: ${response.statusCode}");
+    print("Body:");
+    print(response.body);
+
+    if (response.body.isEmpty) {
+      throw Exception("API returned empty response");
+    }
+
+    return jsonDecode(response.body);
+  }
 }

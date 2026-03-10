@@ -11,39 +11,60 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
 
-  final usernameController = TextEditingController();
-  final passwordController = TextEditingController();
+  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
 
   bool loading = false;
 
-  void login() async {
+  Future<void> login() async {
+
+    if(usernameController.text.isEmpty || passwordController.text.isEmpty){
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Please enter username and password"))
+      );
+      return;
+    }
 
     setState(() {
       loading = true;
     });
 
-    final result = await ApiService.login(
-      usernameController.text,
-      passwordController.text,
-    );
+    try {
 
-    if (result["status"] == "success") {
+      final result = await ApiService.login(
+        usernameController.text.trim(),
+        passwordController.text.trim(),
+      );
 
-      String firmName = result["firm_name"];
-      int userId = int.parse(result["user_id"].toString());
+      if (result["status"] == "success") {
 
-      final prefs = await SharedPreferences.getInstance();
+        String firmName = result["firm_name"];
+        int userId = int.parse(result["user_id"].toString());
 
-      await prefs.setString("firm_name", firmName);
-      await prefs.setInt("user_id", userId);
+        final prefs = await SharedPreferences.getInstance();
 
-      Navigator.pushReplacementNamed(context, "/dashboard");
+        await prefs.setString("firm_name", firmName);
+        await prefs.setInt("user_id", userId);
 
-    } else {
+        if(!mounted) return;
+
+        Navigator.pushReplacementNamed(context, "/dashboard");
+
+      } else {
+
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Invalid login credentials"))
+        );
+
+      }
+
+    } catch (e) {
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Login failed")),
+          const SnackBar(content: Text("Server error. Please try again."))
       );
+
+      debugPrint(e.toString());
 
     }
 
@@ -65,41 +86,92 @@ class _LoginScreenState extends State<LoginScreen> {
 
       body: Center(
 
-        child: Padding(
-          padding: const EdgeInsets.all(20),
+        child: SingleChildScrollView(
 
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
+          child: Padding(
+            padding: const EdgeInsets.all(25),
 
-            children: [
+            child: Container(
+              padding: const EdgeInsets.all(25),
 
-              TextField(
-                controller: usernameController,
-                decoration: const InputDecoration(
-                  labelText: "Email / Phone",
-                ),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 10,
+                  )
+                ],
               ),
 
-              const SizedBox(height: 10),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
 
-              TextField(
-                controller: passwordController,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: "Password",
-                ),
+                  const Text(
+                    "Login",
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+
+                  const SizedBox(height: 25),
+
+                  TextField(
+                    controller: usernameController,
+                    decoration: const InputDecoration(
+                      labelText: "Email / Phone",
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+
+                  const SizedBox(height: 15),
+
+                  TextField(
+                    controller: passwordController,
+                    obscureText: true,
+                    decoration: const InputDecoration(
+                      labelText: "Password",
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  SizedBox(
+                    width: double.infinity,
+
+                      child: ElevatedButton(
+                        onPressed: loading ? null : login,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF2563EB),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                        child: loading
+                            ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                            : const Text(
+                          "Login",
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.white,
+                          ),
+                        ),
+                      )
+                  ),
+
+                ],
               ),
-
-              const SizedBox(height: 20),
-
-              ElevatedButton(
-                onPressed: loading ? null : login,
-                child: loading
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text("Login"),
-              )
-
-            ],
+            ),
           ),
         ),
       ),
