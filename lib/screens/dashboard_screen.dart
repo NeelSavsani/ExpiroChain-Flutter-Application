@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../widgets/sidebar.dart';
+import '../widgets/app_layout.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -20,36 +20,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   void loadFirmName() async {
-
     final prefs = await SharedPreferences.getInstance();
 
     setState(() {
       firmName = prefs.getString("firm_name") ?? "";
     });
-
   }
 
   @override
   Widget build(BuildContext context) {
 
-    return Scaffold(
+    return AppLayout(
 
-      appBar: AppBar(
-        title: const Text(
-          "EXPIROCHAIN",
-          style: TextStyle(color: Colors.white),
-        ),
-        backgroundColor: const Color(0xFF0f172a),
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
+      route: "/dashboard",
 
-      drawer: const Sidebar(currentRoute: "/dashboard"),
+      child: Container(
 
-      body: Container(
         width: double.infinity,
+
         color: const Color(0xFFF4F6F9),
 
         child: Center(
+
           child: Text(
             "$firmName, Welcome to EXPIROCHAIN",
             style: const TextStyle(
@@ -57,8 +49,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
               fontWeight: FontWeight.w500,
             ),
           ),
+
         ),
+
       ),
+
     );
+
   }
+
 }

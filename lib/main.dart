@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'screens/login_screen.dart';
 import 'screens/dashboard_screen.dart';
@@ -21,18 +22,14 @@ class ExpiroChainApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: "EXPIROCHAIN",
-
       theme: ThemeData(
         primaryColor: const Color(0xFF0F172A),
         scaffoldBackgroundColor: const Color(0xFFF4F6F9),
         fontFamily: 'Segoe UI',
       ),
-
-      initialRoute: "/",
-
+      home: const CheckLogin(),
       routes: {
-
-        "/": (context) => const LoginScreen(),
+        "/login": (context) => const LoginScreen(),
         "/dashboard": (context) => const DashboardScreen(),
         "/add-product": (context) => const AddProductScreen(),
         "/products": (context) => const ProductsScreen(),
@@ -43,4 +40,50 @@ class ExpiroChainApp extends StatelessWidget {
       },
     );
   }
+}
+
+class CheckLogin extends StatefulWidget {
+  const CheckLogin({super.key});
+
+  @override
+  State<CheckLogin> createState() => _CheckLoginState();
+}
+
+class _CheckLoginState extends State<CheckLogin> {
+
+  Future<bool> checkLoginStatus() async {
+
+    final prefs = await SharedPreferences.getInstance();
+
+    return prefs.getBool("is_logged_in") ?? false;
+
+  }
+
+  @override
+  Widget build(BuildContext context) {
+
+    return FutureBuilder(
+
+      future: checkLoginStatus(),
+
+      builder: (context, snapshot) {
+
+        if (!snapshot.hasData) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        if (snapshot.data == true) {
+          return const DashboardScreen();
+        } else {
+          return const LoginScreen();
+        }
+
+      },
+
+    );
+
+  }
+
 }

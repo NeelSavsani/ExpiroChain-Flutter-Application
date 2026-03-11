@@ -46,11 +46,16 @@ class _LoginScreenState extends State<LoginScreen> {
         await prefs.setString("firm_name", firmName);
         await prefs.setInt("user_id", userId);
 
+        /* SAVE LOGIN STATE */
+
+        await prefs.setBool("is_logged_in", true);
+
         if(!mounted) return;
 
         Navigator.pushReplacementNamed(context, "/dashboard");
 
-      } else {
+      }
+      else {
 
         ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text("Invalid login credentials"))
@@ -58,7 +63,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
       }
 
-    } catch (e) {
+    }
+    catch (e) {
 
       ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Server error. Please try again."))
@@ -89,9 +95,11 @@ class _LoginScreenState extends State<LoginScreen> {
         child: SingleChildScrollView(
 
           child: Padding(
+
             padding: const EdgeInsets.all(25),
 
             child: Container(
+
               padding: const EdgeInsets.all(25),
 
               decoration: BoxDecoration(
@@ -101,12 +109,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   BoxShadow(
                     color: Colors.black12,
                     blurRadius: 10,
-                  )
+                  ),
                 ],
               ),
 
               child: Column(
+
                 mainAxisSize: MainAxisSize.min,
+
                 children: [
 
                   const Text(
@@ -141,40 +151,54 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 20),
 
                   SizedBox(
+
                     width: double.infinity,
 
-                      child: ElevatedButton(
-                        onPressed: loading ? null : login,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF2563EB),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                        ),
-                        child: loading
-                            ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
-                            : const Text(
-                          "Login",
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.white,
-                          ),
+                    child: ElevatedButton(
+
+                      onPressed: loading ? null : login,
+
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2563EB),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+
+                      child: loading
+                          ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
                         ),
                       )
+                          : const Text(
+                        "Login",
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.white,
+                        ),
+                      ),
+
+                    ),
+
                   ),
 
                 ],
+
               ),
+
             ),
+
           ),
+
         ),
+
       ),
+
     );
+
   }
+
 }

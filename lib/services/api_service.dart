@@ -4,6 +4,8 @@ import '../config/api_config.dart';
 
 class ApiService {
 
+  /* LOGIN */
+
   static Future<Map<String, dynamic>> login(
       String username, String password) async {
 
@@ -18,6 +20,8 @@ class ApiService {
     return jsonDecode(response.body);
   }
 
+  /* GET ACCOUNT */
+
   static Future<Map<String, dynamic>> getAccount(int userId) async {
 
     final response = await http.get(
@@ -25,26 +29,28 @@ class ApiService {
     );
 
     return jsonDecode(response.body);
-
   }
+
+  /* GET PRODUCTS */
 
   static Future<Map<String, dynamic>> getProducts(int userId) async {
 
-    final url = "${ApiConfig.getProducts}?user_id=$userId";
-
-    print("Calling API:");
-    print(url);
-
-    final response = await http.get(Uri.parse(url));
-
-    print("Status Code: ${response.statusCode}");
-    print("Body:");
-    print(response.body);
-
-    if (response.body.isEmpty) {
-      throw Exception("API returned empty response");
-    }
+    final response = await http.get(
+      Uri.parse("${ApiConfig.getProducts}?user_id=$userId"),
+    );
 
     return jsonDecode(response.body);
   }
+
+  /* GET STOCKS */
+
+  static Future<Map<String, dynamic>> getStocks(int userId) async {
+
+    final response = await http.get(
+      Uri.parse("${ApiConfig.getStocks}?user_id=$userId"),
+    );
+
+    return jsonDecode(response.body);
+  }
+
 }

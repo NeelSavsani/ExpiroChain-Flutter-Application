@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../services/api_service.dart';
-import '../widgets/sidebar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../services/api_service.dart';
+import '../widgets/app_layout.dart';
 
 class ProductsScreen extends StatefulWidget {
   const ProductsScreen({super.key});
@@ -23,6 +24,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
   }
 
   Future<void> loadProducts() async {
+
     try {
 
       SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -30,9 +32,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
 
       if(userId == null){
         print("User ID not found in SharedPreferences");
-        setState(() {
-          loading = false;
-        });
+        setState(() { loading = false; });
         return;
       }
 
@@ -47,9 +47,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
 
       } else {
 
-        setState(() {
-          loading = false;
-        });
+        setState(() { loading = false; });
 
       }
 
@@ -62,22 +60,30 @@ class _ProductsScreenState extends State<ProductsScreen> {
       });
 
     }
+
   }
 
   String formatDate(String date){
+
     DateTime parsed = DateTime.parse(date);
+
     return DateFormat("dd MMM yyyy • hh:mm a").format(parsed);
+
   }
 
   Widget expiryBadge(int value){
 
     if(value == 1){
+
       return Container(
+
         padding: const EdgeInsets.symmetric(horizontal:8,vertical:3),
+
         decoration: BoxDecoration(
           color: const Color(0xFFDCFCE7),
           borderRadius: BorderRadius.circular(6),
         ),
+
         child: const Text(
           "Yes",
           style: TextStyle(
@@ -86,15 +92,20 @@ class _ProductsScreenState extends State<ProductsScreen> {
             fontWeight: FontWeight.w600,
           ),
         ),
+
       );
+
     }
 
     return Container(
+
       padding: const EdgeInsets.symmetric(horizontal:8,vertical:3),
+
       decoration: BoxDecoration(
         color: const Color(0xFFFEE2E2),
         borderRadius: BorderRadius.circular(6),
       ),
+
       child: const Text(
         "No",
         style: TextStyle(
@@ -103,51 +114,64 @@ class _ProductsScreenState extends State<ProductsScreen> {
           fontWeight: FontWeight.w600,
         ),
       ),
+
     );
+
   }
 
   Widget tableHeader(){
 
     return Container(
+
       padding: const EdgeInsets.symmetric(vertical:12),
+
       color: const Color(0xFF0F172A),
+
       child: const Row(
+
         children: [
 
-          Expanded(child: Padding(
-            padding: EdgeInsets.symmetric(horizontal:10),
-            child: Text("Barcode",style: TextStyle(color: Colors.white)),
-          )),
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal:10),
+              child: Text("Barcode",style: TextStyle(color: Colors.white)),
+            ),
+          ),
 
           Expanded(child: Text("Product Name",style: TextStyle(color: Colors.white))),
-
           Expanded(child: Text("Category",style: TextStyle(color: Colors.white))),
-
           Expanded(child: Text("Manufacturer",style: TextStyle(color: Colors.white))),
-
           Expanded(child: Text("Expiry",style: TextStyle(color: Colors.white))),
-
           Expanded(child: Text("Created At",style: TextStyle(color: Colors.white))),
 
         ],
+
       ),
+
     );
+
   }
 
   Widget productRow(product){
 
     return Container(
+
       padding: const EdgeInsets.symmetric(vertical:14),
+
       decoration: const BoxDecoration(
         border: Border(bottom: BorderSide(color: Color(0xFFE5E7EB))),
       ),
+
       child: Row(
+
         children: [
 
-          Expanded(child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal:10),
-            child: Text(product["barcode"]),
-          )),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal:10),
+              child: Text(product["barcode"]),
+            ),
+          ),
 
           Expanded(
             child: Text(
@@ -158,14 +182,26 @@ class _ProductsScreenState extends State<ProductsScreen> {
 
           Expanded(child: Text(product["category"])),
 
-          Expanded(child: Text(product["manufacturer"]?.toString() ?? "—")),
+          Expanded(
+            child: Text(product["manufacturer"]?.toString() ?? "—"),
+          ),
 
-          Expanded(child: expiryBadge(int.parse(product["expiry_applicable"].toString()))),
+          Expanded(
+            child: expiryBadge(
+              int.parse(product["expiry_applicable"].toString()),
+            ),
+          ),
 
-          Expanded(child: Text(formatDate(product["created_at"].toString()))),
+          Expanded(
+            child: Text(
+              formatDate(product["created_at"].toString()),
+            ),
+          ),
 
         ],
+
       ),
+
     );
 
   }
@@ -173,25 +209,18 @@ class _ProductsScreenState extends State<ProductsScreen> {
   @override
   Widget build(BuildContext context) {
 
-    return Scaffold(
+    return AppLayout(
 
-      appBar: AppBar(
-        title: const Text(
-          "EXPIROCHAIN",
-          style: TextStyle(color: Colors.white),
-        ),
-        backgroundColor: const Color(0xFF0F172A),
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
+      route: "/products",
 
-      drawer: const Sidebar(currentRoute: "/products"),
-
-      body: Container(
+      child: Container(
 
         color: const Color(0xFFF4F6F9),
+
         padding: const EdgeInsets.all(20),
 
         child: loading
+
             ? const Center(child: CircularProgressIndicator())
 
             : Container(
@@ -207,11 +236,15 @@ class _ProductsScreenState extends State<ProductsScreen> {
           ),
 
           child: Column(
+
             crossAxisAlignment: CrossAxisAlignment.start,
+
             children: [
 
               Row(
+
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
                 children: [
 
                   const Text(
@@ -223,21 +256,27 @@ class _ProductsScreenState extends State<ProductsScreen> {
                   ),
 
                   ElevatedButton.icon(
+
                     onPressed: () {
                       Navigator.pushNamed(context, "/add-product");
                     },
+
                     icon: const Icon(Icons.add, color: Colors.white),
+
                     label: const Text(
                       "Add Product",
                       style: TextStyle(color: Colors.white),
                     ),
+
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF2563EB),
                       foregroundColor: Colors.white,
                     ),
+
                   )
 
                 ],
+
               ),
 
               const SizedBox(height:20),
@@ -245,18 +284,34 @@ class _ProductsScreenState extends State<ProductsScreen> {
               tableHeader(),
 
               Expanded(
+
                 child: SingleChildScrollView(
+
                   child: Column(
-                    children: List.generate(products.length, (index){
-                      return productRow(products[index]);
-                    }),
+
+                    children: List.generate(
+                      products.length,
+                          (index){
+                        return productRow(products[index]);
+                      },
+                    ),
+
                   ),
+
                 ),
+
               )
+
             ],
+
           ),
+
         ),
+
       ),
+
     );
+
   }
+
 }

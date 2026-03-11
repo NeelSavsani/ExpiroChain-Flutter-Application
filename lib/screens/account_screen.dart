@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../services/api_service.dart';
-import '../widgets/sidebar.dart';
 import 'package:intl/intl.dart';
+
+import '../services/api_service.dart';
+import '../widgets/app_layout.dart';
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
@@ -14,10 +15,6 @@ class AccountScreen extends StatefulWidget {
 class _AccountScreenState extends State<AccountScreen> {
 
   Map account = {};
-  String formatDate(String date) {
-    DateTime parsedDate = DateTime.parse(date);
-    return DateFormat("dd MMM yyyy • hh:mm a").format(parsedDate);
-  }
   bool loading = true;
 
   @override
@@ -39,13 +36,20 @@ class _AccountScreenState extends State<AccountScreen> {
         loading = false;
       });
     }
+  }
 
+  String formatDate(String date) {
+    DateTime parsedDate = DateTime.parse(date);
+    return DateFormat("dd MMM yyyy • hh:mm a").format(parsedDate);
   }
 
   Widget buildRow(String title, String value){
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
+
       child: Row(
+
         children: [
 
           Expanded(
@@ -67,30 +71,23 @@ class _AccountScreenState extends State<AccountScreen> {
                 color: Colors.black87,
               ),
             ),
-          )
+          ),
 
         ],
+
       ),
     );
+
   }
 
   @override
   Widget build(BuildContext context) {
 
-    return Scaffold(
+    return AppLayout(
 
-      appBar: AppBar(
-        title: const Text(
-          "EXPIROCHAIN",
-          style: TextStyle(color: Colors.white),
-        ),
-        backgroundColor: const Color(0xFF0f172a),
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
+      route: "/account",
 
-      drawer: const Sidebar(currentRoute: "/account"),
-
-      body: loading
+      child: loading
           ? const Center(child: CircularProgressIndicator())
           : Container(
 
@@ -100,6 +97,7 @@ class _AccountScreenState extends State<AccountScreen> {
         child: Center(
 
           child: Container(
+
             width: 600,
             padding: const EdgeInsets.all(25),
 
@@ -115,7 +113,9 @@ class _AccountScreenState extends State<AccountScreen> {
             ),
 
             child: Column(
+
               crossAxisAlignment: CrossAxisAlignment.start,
+
               children: [
 
                 const Text(
@@ -134,22 +134,31 @@ class _AccountScreenState extends State<AccountScreen> {
                 buildRow("Phone Number", account["phone"] ?? ""),
                 buildRow("Email ID", account["email"] ?? ""),
                 buildRow("Address", account["address"] ?? ""),
+
                 buildRow(
                   "Registered At",
                   account["registered_at"] != null
                       ? formatDate(account["registered_at"])
                       : "",
                 ),
+
                 buildRow("Organization Type", account["organization_type"] ?? ""),
                 buildRow("GST No", account["gstno"] ?? ""),
                 buildRow("DL1 No", account["dl1no"] ?? ""),
                 buildRow("DL2 No", account["dl2no"] ?? ""),
 
               ],
+
             ),
+
           ),
+
         ),
+
       ),
+
     );
+
   }
+
 }

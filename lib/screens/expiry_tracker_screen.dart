@@ -1,32 +1,32 @@
 import 'package:flutter/material.dart';
-import '../widgets/sidebar.dart';
+import '../widgets/app_layout.dart';
 
 class ExpiryTrackerScreen extends StatelessWidget {
-
   const ExpiryTrackerScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
 
-    return Scaffold(
+    return AppLayout(
 
-      appBar: AppBar(
-        title: const Text("EXPIROCHAIN",style: TextStyle(color: Colors.white)),
-        backgroundColor: const Color(0xFF0f172a),
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
+      route: "/expiry",
 
-      drawer: const Sidebar(currentRoute: "/expiry"),
+      child: Container(
 
-      body: Container(
         color: const Color(0xFFF4F6F9),
+
         padding: const EdgeInsets.all(20),
 
         child: Card(
+
           child: Padding(
+
             padding: const EdgeInsets.all(20),
 
             child: Column(
+
+              crossAxisAlignment: CrossAxisAlignment.start,
+
               children: const [
 
                 Text(
@@ -39,13 +39,22 @@ class ExpiryTrackerScreen extends StatelessWidget {
 
                 SizedBox(height: 20),
 
-                Text("Expiry tracking data will appear here")
+                Text(
+                  "Expiry tracking data will appear here",
+                ),
 
               ],
+
             ),
+
           ),
+
         ),
+
       ),
+
     );
+
   }
+
 }
