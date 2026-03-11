@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import '../services/api_service.dart';
 import '../widgets/app_layout.dart';
 
@@ -24,14 +22,12 @@ class _ProductsScreenState extends State<ProductsScreen> {
   }
 
   Future<void> loadProducts() async {
-
     try {
 
       SharedPreferences prefs = await SharedPreferences.getInstance();
       int? userId = prefs.getInt("user_id");
 
       if(userId == null){
-        print("User ID not found in SharedPreferences");
         setState(() { loading = false; });
         return;
       }
@@ -39,171 +35,144 @@ class _ProductsScreenState extends State<ProductsScreen> {
       final result = await ApiService.getProducts(userId);
 
       if(result["status"] == "success"){
-
         setState(() {
           products = List.from(result["products"]);
           loading = false;
         });
-
-      } else {
-
+      }
+      else{
         setState(() { loading = false; });
-
       }
 
     } catch(e) {
-
       print("ERROR: $e");
-
-      setState(() {
-        loading = false;
-      });
-
+      setState(() { loading = false; });
     }
-
   }
 
-  String formatDate(String date){
+  /* EXPIRY ICON */
 
-    DateTime parsed = DateTime.parse(date);
-
-    return DateFormat("dd MMM yyyy • hh:mm a").format(parsed);
-
-  }
-
-  Widget expiryBadge(int value){
+  Widget expiryIcon(int value){
 
     if(value == 1){
-
-      return Container(
-
-        padding: const EdgeInsets.symmetric(horizontal:8,vertical:3),
-
-        decoration: BoxDecoration(
-          color: const Color(0xFFDCFCE7),
-          borderRadius: BorderRadius.circular(6),
-        ),
-
-        child: const Text(
-          "Yes",
-          style: TextStyle(
-            color: Color(0xFF166534),
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-
+      return const Icon(
+        Icons.check_circle,
+        color: Colors.green,
+        size: 20,
       );
-
     }
 
-    return Container(
-
-      padding: const EdgeInsets.symmetric(horizontal:8,vertical:3),
-
-      decoration: BoxDecoration(
-        color: const Color(0xFFFEE2E2),
-        borderRadius: BorderRadius.circular(6),
-      ),
-
-      child: const Text(
-        "No",
-        style: TextStyle(
-          color: Color(0xFF991B1B),
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-
+    return const Icon(
+      Icons.cancel,
+      color: Colors.red,
+      size: 20,
     );
-
   }
+
+  /* TABLE HEADER */
 
   Widget tableHeader(){
 
     return Container(
-
       padding: const EdgeInsets.symmetric(vertical:12),
-
       color: const Color(0xFF0F172A),
 
       child: const Row(
-
         children: [
 
           Expanded(
+            flex: 3,
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal:10),
-              child: Text("Barcode",style: TextStyle(color: Colors.white)),
+              child: Text(
+                "Product Name",
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ),
 
-          Expanded(child: Text("Product Name",style: TextStyle(color: Colors.white))),
-          Expanded(child: Text("Category",style: TextStyle(color: Colors.white))),
-          Expanded(child: Text("Manufacturer",style: TextStyle(color: Colors.white))),
-          Expanded(child: Text("Expiry",style: TextStyle(color: Colors.white))),
-          Expanded(child: Text("Created At",style: TextStyle(color: Colors.white))),
+          Expanded(
+            flex: 2,
+            child: Text(
+              "Category",
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+
+          Expanded(
+            flex: 3,
+            child: Text(
+              "Manufacturer",
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+
+          Expanded(
+            flex: 1,
+            child: Text(
+              "Expiry",
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
 
         ],
-
       ),
-
     );
-
   }
+
+  /* PRODUCT ROW */
 
   Widget productRow(product){
 
     return Container(
-
       padding: const EdgeInsets.symmetric(vertical:14),
 
       decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xFFE5E7EB))),
+        border: Border(
+          bottom: BorderSide(color: Color(0xFFE5E7EB)),
+        ),
       ),
 
       child: Row(
-
         children: [
 
           Expanded(
+            flex: 3,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal:10),
-              child: Text(product["barcode"]),
+              child: Text(
+                product["prod_name"].toString(),
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ),
 
           Expanded(
+            flex: 2,
             child: Text(
-              product["prod_name"].toString(),
+              product["category"],
               overflow: TextOverflow.ellipsis,
             ),
           ),
 
-          Expanded(child: Text(product["category"])),
-
           Expanded(
-            child: Text(product["manufacturer"]?.toString() ?? "—"),
+            flex: 3,
+            child: Text(
+              product["manufacturer"] ?? "—",
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
 
           Expanded(
-            child: expiryBadge(
+            flex: 1,
+            child: expiryIcon(
               int.parse(product["expiry_applicable"].toString()),
             ),
           ),
 
-          Expanded(
-            child: Text(
-              formatDate(product["created_at"].toString()),
-            ),
-          ),
-
         ],
-
       ),
-
     );
-
   }
 
   @override
@@ -216,13 +185,10 @@ class _ProductsScreenState extends State<ProductsScreen> {
       child: Container(
 
         color: const Color(0xFFF4F6F9),
-
         padding: const EdgeInsets.all(20),
 
         child: loading
-
             ? const Center(child: CircularProgressIndicator())
-
             : Container(
 
           padding: const EdgeInsets.all(20),
@@ -231,7 +197,10 @@ class _ProductsScreenState extends State<ProductsScreen> {
             color: Colors.white,
             borderRadius: BorderRadius.circular(12),
             boxShadow: const [
-              BoxShadow(color: Colors.black12, blurRadius: 8)
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 8,
+              )
             ],
           ),
 
@@ -257,11 +226,14 @@ class _ProductsScreenState extends State<ProductsScreen> {
 
                   ElevatedButton.icon(
 
-                    onPressed: () {
+                    onPressed: (){
                       Navigator.pushNamed(context, "/add-product");
                     },
 
-                    icon: const Icon(Icons.add, color: Colors.white),
+                    icon: const Icon(
+                      Icons.add,
+                      color: Colors.white,
+                    ),
 
                     label: const Text(
                       "Add Product",
@@ -270,48 +242,52 @@ class _ProductsScreenState extends State<ProductsScreen> {
 
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF2563EB),
-                      foregroundColor: Colors.white,
                     ),
 
-                  )
+                  ),
 
                 ],
-
               ),
 
               const SizedBox(height:20),
 
-              tableHeader(),
+              /* TABLE */
 
               Expanded(
 
                 child: SingleChildScrollView(
 
-                  child: Column(
+                  scrollDirection: Axis.horizontal,
 
-                    children: List.generate(
-                      products.length,
-                          (index){
-                        return productRow(products[index]);
-                      },
+                  child: SizedBox(
+
+                    width: MediaQuery.of(context).size.width,
+
+                    child: Column(
+
+                      children: [
+
+                        tableHeader(),
+
+                        Expanded(
+                          child: ListView.builder(
+                            itemCount: products.length,
+                            itemBuilder: (context,index){
+                              return productRow(products[index]);
+                            },
+                          ),
+                        )
+
+                      ],
                     ),
-
                   ),
-
                 ),
-
               )
 
             ],
-
           ),
-
         ),
-
       ),
-
     );
-
   }
-
 }
