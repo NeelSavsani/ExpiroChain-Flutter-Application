@@ -9,6 +9,7 @@ import 'screens/account_screen.dart';
 import 'screens/reports_screen.dart';
 import 'screens/stock_screen.dart';
 import 'screens/expiry_tracker_screen.dart';
+import 'screens/add_stock_screen.dart';
 
 void main() {
   runApp(const ExpiroChainApp());
@@ -37,6 +38,7 @@ class ExpiroChainApp extends StatelessWidget {
         "/expiry": (context) => const ExpiryTrackerScreen(),
         "/reports": (context) => const ReportsScreen(),
         "/account": (context) => const AccountScreen(),
+        "/add-stock": (context) => const AddStockScreen(),
       },
     );
   }

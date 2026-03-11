@@ -53,4 +53,67 @@ class ApiService {
     return jsonDecode(response.body);
   }
 
+  /* ADD PRODUCTS */
+  static Future<Map<String, dynamic>> addProduct(
+      int userId,
+      String barcode,
+      String prodName,
+      String category,
+      String manufacturer,
+      int expiryApplicable
+      ) async {
+
+    final response = await http.post(
+      Uri.parse(ApiConfig.addProduct),
+      body: {
+        "user_id": userId.toString(),
+        "barcode": barcode,
+        "prod_name": prodName,
+        "category": category,
+        "manufacturer": manufacturer,
+        "expiry_applicable": expiryApplicable.toString(),
+      },
+    );
+
+    return jsonDecode(response.body);
+  }
+
+  /* ADD STOCK */
+
+  static Future<Map<String, dynamic>> addStock(
+      int userId,
+      String barcode,
+      String batchNo,
+      String expDate,
+      int qty,
+      ) async {
+
+    final response = await http.post(
+      Uri.parse(ApiConfig.addStock),
+      body: {
+        "user_id": userId.toString(),
+        "barcode": barcode,
+        "batch_no": batchNo,
+        "exp_date": expDate,
+        "qty": qty.toString(),
+      },
+    );
+
+    return jsonDecode(response.body);
+  }
+
+  /* GET PRODUCT BY BARCODE */
+
+  static Future<Map<String,dynamic>> getProductByBarcode(
+      int userId, String barcode) async {
+
+    final response = await http.get(
+      Uri.parse(
+          "${ApiConfig.getProductByBarcode}?user_id=$userId&barcode=$barcode"
+      ),
+    );
+
+    return jsonDecode(response.body);
+  }
+
 }

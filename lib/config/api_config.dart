@@ -9,4 +9,9 @@ class ApiConfig {
   static const String addProduct = "$baseUrl/add_product.php";
 
   static const String getStocks = "$baseUrl/get_stock.php";
+
+  static const String addStock = "$baseUrl/add_stock.php";
+
+  static const String getProductByBarcode = "$baseUrl/get_product_by_barcode.php";
+
 }

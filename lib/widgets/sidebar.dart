@@ -79,6 +79,7 @@ class Sidebar extends StatelessWidget {
           menuItem(context, Icons.home, "Home", "/dashboard"),
           menuItem(context, Icons.add_box, "Add Product", "/add-product"),
           menuItem(context, Icons.inventory, "Products", "/products"),
+          menuItem(context, Icons.add_box, "Add Stock", "/add-stock"),
           menuItem(context, Icons.store, "Stock", "/stock"),
           menuItem(context, Icons.warning, "Expiry Tracker", "/expiry"),
           menuItem(context, Icons.bar_chart, "Reports", "/reports"),
