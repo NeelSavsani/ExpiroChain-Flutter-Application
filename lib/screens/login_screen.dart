@@ -17,6 +17,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool loading = false;
 
+/* 👁 PASSWORD VISIBILITY */
+  bool _obscurePassword = true;
+
   Future<void> login() async {
 
     if (usernameController.text.isEmpty ||
@@ -27,6 +30,7 @@ class _LoginScreenState extends State<LoginScreen> {
           content: Text("Please enter username and password"),
         ),
       );
+
       return;
     }
 
@@ -56,7 +60,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
         Navigator.pushReplacementNamed(context, "/dashboard");
 
-      } else {
+      }
+      else {
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -66,7 +71,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
       }
 
-    } catch (e) {
+    }
+    catch (e) {
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -75,6 +81,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       debugPrint(e.toString());
+
     }
 
     setState(() {
@@ -112,6 +119,7 @@ class _LoginScreenState extends State<LoginScreen> {
           )
 
         ],
+
       ),
 
       body: Center(
@@ -125,6 +133,7 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Container(
 
               width: 400,
+
               padding: const EdgeInsets.all(25),
 
               decoration: BoxDecoration(
@@ -134,12 +143,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   BoxShadow(
                     color: Colors.black12,
                     blurRadius: 10,
-                  )
+                  ),
                 ],
               ),
 
               child: Column(
+
                 mainAxisSize: MainAxisSize.min,
+
                 children: [
 
                   const Text(
@@ -153,12 +164,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   const SizedBox(height: 25),
 
-                  /* USERNAME */
+/* USERNAME */
 
                   TextField(
                     controller: usernameController,
                     decoration: const InputDecoration(
                       labelText: "Email / Phone",
+                      prefixIcon: Icon(Icons.person),
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -169,18 +181,43 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   TextField(
                     controller: passwordController,
-                    obscureText: true,
-                    decoration: const InputDecoration(
+                    obscureText: _obscurePassword,
+                    decoration: InputDecoration(
+
                       labelText: "Password",
-                      border: OutlineInputBorder(),
+
+                      prefixIcon: const Icon(Icons.lock),
+
+                      suffixIcon: IconButton(
+
+                        icon: Icon(
+                          _obscurePassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                        ),
+
+                        onPressed: () {
+                          setState(() {
+                            _obscurePassword = !_obscurePassword;
+                          });
+                        },
+
+                      ),
+
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+
                     ),
+
                   ),
 
                   const SizedBox(height: 20),
 
-                  /* LOGIN BUTTON */
+/* LOGIN BUTTON */
 
                   SizedBox(
+
                     width: double.infinity,
 
                     child: ElevatedButton(
@@ -194,6 +231,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
 
                       child: loading
+
                           ? const SizedBox(
                         height: 20,
                         width: 20,
@@ -202,6 +240,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           strokeWidth: 2,
                         ),
                       )
+
                           : const Text(
                         "Login",
                         style: TextStyle(
@@ -209,15 +248,25 @@ class _LoginScreenState extends State<LoginScreen> {
                           color: Colors.white,
                         ),
                       ),
+
                     ),
+
                   ),
 
                 ],
+
               ),
+
             ),
+
           ),
+
         ),
+
       ),
+
     );
+
   }
+
 }
