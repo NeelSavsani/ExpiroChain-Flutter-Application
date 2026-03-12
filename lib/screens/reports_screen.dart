@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:dio/dio.dart';
+import 'package:open_filex/open_filex.dart';
+import 'dart:io';
+import 'package:permission_handler/permission_handler.dart';
 import '../services/api_service.dart';
 import '../widgets/app_layout.dart';
 
@@ -16,14 +19,16 @@ class _ReportsScreenState extends State<ReportsScreen> {
   String selectedFormat = "pdf";
   String selectedReport = "products";
 
+/* ===================================== OPEN EXPORT DIALOG ===================================== */
+
   void openExportDialog() {
+
+    String tempFormat = selectedFormat;
+    String tempReport = selectedReport;
 
     showDialog(
       context: context,
       builder: (context) {
-
-        String tempFormat = selectedFormat;
-        String tempReport = selectedReport;
 
         return StatefulBuilder(
           builder: (context, setStateDialog) {
@@ -45,10 +50,10 @@ class _ReportsScreenState extends State<ReportsScreen> {
                       ),
                     ),
 
-                    RadioListTile(
+                    RadioListTile<String>(
+                      title: const Text("Products Report"),
                       value: "products",
                       groupValue: tempReport,
-                      title: const Text("Products Report"),
                       onChanged: (value){
                         setStateDialog(() {
                           tempReport = value!;
@@ -56,10 +61,10 @@ class _ReportsScreenState extends State<ReportsScreen> {
                       },
                     ),
 
-                    RadioListTile(
+                    RadioListTile<String>(
+                      title: const Text("Stock Report"),
                       value: "stock",
                       groupValue: tempReport,
-                      title: const Text("Stock Report"),
                       onChanged: (value){
                         setStateDialog(() {
                           tempReport = value!;
@@ -77,71 +82,12 @@ class _ReportsScreenState extends State<ReportsScreen> {
                       ),
                     ),
 
-                    RadioListTile(
-                      value: "pdf",
-                      groupValue: tempFormat,
-                      title: const Text("PDF (.pdf)"),
-                      onChanged: (value){
-                        setStateDialog(() {
-                          tempFormat = value!;
-                        });
-                      },
-                    ),
-
-                    RadioListTile(
-                      value: "csv",
-                      groupValue: tempFormat,
-                      title: const Text("CSV (.csv)"),
-                      onChanged: (value){
-                        setStateDialog(() {
-                          tempFormat = value!;
-                        });
-                      },
-                    ),
-
-                    RadioListTile(
-                      value: "excel",
-                      groupValue: tempFormat,
-                      title: const Text("CSV for Excel"),
-                      onChanged: (value){
-                        setStateDialog(() {
-                          tempFormat = value!;
-                        });
-                      },
-                    ),
-
-                    RadioListTile(
-                      value: "doc",
-                      groupValue: tempFormat,
-                      title: const Text("Word (.doc)"),
-                      onChanged: (value){
-                        setStateDialog(() {
-                          tempFormat = value!;
-                        });
-                      },
-                    ),
-
-                    RadioListTile(
-                      value: "json",
-                      groupValue: tempFormat,
-                      title: const Text("JSON (.json)"),
-                      onChanged: (value){
-                        setStateDialog(() {
-                          tempFormat = value!;
-                        });
-                      },
-                    ),
-
-                    RadioListTile(
-                      value: "txt",
-                      groupValue: tempFormat,
-                      title: const Text("Plain Text (.txt)"),
-                      onChanged: (value){
-                        setStateDialog(() {
-                          tempFormat = value!;
-                        });
-                      },
-                    ),
+                    buildFormat("pdf","PDF (.pdf)",tempFormat,setStateDialog),
+                    buildFormat("csv","CSV (.csv)",tempFormat,setStateDialog),
+                    buildFormat("excel","CSV for Excel",tempFormat,setStateDialog),
+                    buildFormat("doc","Word (.doc)",tempFormat,setStateDialog),
+                    buildFormat("json","JSON (.json)",tempFormat,setStateDialog),
+                    buildFormat("txt","Plain Text (.txt)",tempFormat,setStateDialog),
 
                   ],
                 ),
@@ -171,7 +117,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 )
 
               ],
-
             );
 
           },
@@ -182,53 +127,143 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
   }
 
+/* ===================================== FORMAT RADIO BUILDER ===================================== */
+
+  Widget buildFormat(String value,String label,String group,Function setStateDialog){
+
+    return RadioListTile<String>(
+      value: value,
+      groupValue: group,
+      title: Text(label),
+      onChanged: (v){
+        setStateDialog(() {
+          selectedFormat = v!;
+        });
+      },
+    );
+
+  }
+
+/* ===================================== EXPORT REPORT FUNCTION ===================================== */
+
   Future<void> exportReports() async {
 
     final prefs = await SharedPreferences.getInstance();
     int userId = prefs.getInt("user_id") ?? 0;
 
-    String url = await ApiService.exportReports(
-        userId,
-        selectedFormat,
-        selectedReport
-    );
+    String url = ApiService.exportReports(userId,selectedFormat,selectedReport );
 
-    Navigator.pop(context);
+    try{
 
-    await launchUrl(
-      Uri.parse(url),
-      mode: LaunchMode.externalApplication,
-    );
+/* REQUEST STORAGE PERMISSION */
+
+      var status = await Permission.manageExternalStorage.request();
+
+      if(!status.isGranted){
+
+        if(!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Storage permission required")),
+        );
+
+        return;
+
+      }
+
+/* DOWNLOAD DIRECTORY */
+
+      Directory downloadDir = Directory("/storage/emulated/0/Download");
+
+      String extension =
+      selectedFormat == "excel" ? "csv" : selectedFormat;
+
+      String fileName =
+          "${selectedReport}_report.$extension";
+
+      String filePath =
+          "${downloadDir.path}/$fileName";
+
+/* DOWNLOAD FILE */
+
+      Dio dio = Dio();
+
+      Response response = await dio.download(
+        url,
+        filePath,
+        options: Options(
+          responseType: ResponseType.bytes,
+          followRedirects: false,
+          validateStatus: (status) {
+            return status! < 500;
+          },
+        ),
+      );
+
+/* VERIFY FILE SIZE */
+
+      File file = File(filePath);
+
+      if(await file.length() == 0){
+
+        if(!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("File download failed")),
+        );
+
+        return;
+
+      }
+
+      if(!mounted) return;
+
+/* SUCCESS MESSAGE */
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Saved in Downloads: $fileName")),
+      );
+
+/* OPEN FILE */
+
+      await OpenFilex.open(filePath);
+
+    }
+    catch(e){
+
+      if(!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Download failed: $e")),
+      );
+
+    }
 
   }
+
+/* ===================================== UI ===================================== */
 
   @override
   Widget build(BuildContext context) {
 
     return AppLayout(
-
       route: "/reports",
 
       child: Container(
-
         color: const Color(0xFFF4F6F9),
-
         padding: const EdgeInsets.all(20),
 
         child: Card(
 
           child: Padding(
-
             padding: const EdgeInsets.all(20),
 
             child: Column(
-
               crossAxisAlignment: CrossAxisAlignment.start,
 
               children: [
 
                 Row(
-
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
                   children: [
@@ -242,22 +277,16 @@ class _ReportsScreenState extends State<ReportsScreen> {
                     ),
 
                     ElevatedButton.icon(
-
                       icon: const Icon(Icons.file_download),
-
                       label: const Text("Export"),
-
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF2563EB),
                         foregroundColor: Colors.white,
                       ),
-
                       onPressed: openExportDialog,
-
                     ),
 
                   ],
-
                 ),
 
                 const SizedBox(height: 20),
@@ -267,7 +296,6 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 ),
 
               ],
-
             ),
 
           ),

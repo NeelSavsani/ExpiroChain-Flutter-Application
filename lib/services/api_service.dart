@@ -5,9 +5,9 @@ import '../config/api_config.dart';
 class ApiService {
 
   /* LOGIN */
-
   static Future<Map<String, dynamic>> login(
-      String username, String password) async {
+      String username,
+      String password) async {
 
     final response = await http.post(
       Uri.parse(ApiConfig.login),
@@ -21,7 +21,6 @@ class ApiService {
   }
 
   /* GET ACCOUNT */
-
   static Future<Map<String, dynamic>> getAccount(int userId) async {
 
     final response = await http.get(
@@ -32,7 +31,6 @@ class ApiService {
   }
 
   /* GET PRODUCTS */
-
   static Future<Map<String, dynamic>> getProducts(int userId) async {
 
     final response = await http.get(
@@ -42,8 +40,7 @@ class ApiService {
     return jsonDecode(response.body);
   }
 
-  /* GET STOCKS */
-
+  /* GET STOCK */
   static Future<Map<String, dynamic>> getStocks(int userId) async {
 
     final response = await http.get(
@@ -53,15 +50,14 @@ class ApiService {
     return jsonDecode(response.body);
   }
 
-  /* ADD PRODUCTS */
+  /* ADD PRODUCT */
   static Future<Map<String, dynamic>> addProduct(
       int userId,
       String barcode,
       String prodName,
       String category,
       String manufacturer,
-      int expiryApplicable
-      ) async {
+      int expiryApplicable) async {
 
     final response = await http.post(
       Uri.parse(ApiConfig.addProduct),
@@ -79,14 +75,12 @@ class ApiService {
   }
 
   /* ADD STOCK */
-
   static Future<Map<String, dynamic>> addStock(
       int userId,
       String barcode,
       String batchNo,
       String expDate,
-      int qty,
-      ) async {
+      int qty) async {
 
     final response = await http.post(
       Uri.parse(ApiConfig.addStock),
@@ -103,45 +97,36 @@ class ApiService {
   }
 
   /* GET PRODUCT BY BARCODE */
-
-  static Future<Map<String,dynamic>> getProductByBarcode(
-      int userId, String barcode) async {
+  static Future<Map<String, dynamic>> getProductByBarcode(
+      int userId,
+      String barcode) async {
 
     final response = await http.get(
       Uri.parse(
-          "${ApiConfig.getProductByBarcode}?user_id=$userId&barcode=$barcode"
-      ),
+          "${ApiConfig.getProductByBarcode}?user_id=$userId&barcode=$barcode"),
     );
 
     return jsonDecode(response.body);
   }
-
-
 
   /* GET EXPIRY TRACKER */
-  static Future<Map<String,dynamic>> getExpiryTracker(int userId) async {
+  static Future<Map<String, dynamic>> getExpiryTracker(int userId) async {
 
     final response = await http.get(
-        Uri.parse("${ApiConfig.baseUrl}/get_expiry_tracker.php?user_id=$userId")
+      Uri.parse("${ApiConfig.baseUrl}/get_expiry_tracker.php?user_id=$userId"),
     );
 
     return jsonDecode(response.body);
-
   }
 
-  /* EXPORT REPORT */
-
-  static Future<String> exportReports(
+  /* EXPORT REPORT URL */
+  static String exportReports(
       int userId,
       String type,
-      String table,
-      ) async {
+      String table) {
 
-    final url =
-        "${ApiConfig.exportReports}?user_id=$userId&type=$type&table=$table";
-
-    return url;
-
+    return "${ApiConfig.exportReports}"
+        "?user_id=$userId&type=$type&table=$table";
   }
 
 }
