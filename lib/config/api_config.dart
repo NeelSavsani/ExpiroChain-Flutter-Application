@@ -14,4 +14,6 @@ class ApiConfig {
 
   static const String getProductByBarcode = "$baseUrl/get_product_by_barcode.php";
 
+  static const String getExpiryTracker = "$baseUrl/get_expiry_tracker.php";
+
 }

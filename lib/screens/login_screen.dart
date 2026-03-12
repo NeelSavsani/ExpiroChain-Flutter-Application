@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
 
@@ -18,9 +19,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> login() async {
 
-    if(usernameController.text.isEmpty || passwordController.text.isEmpty){
+    if (usernameController.text.isEmpty ||
+        passwordController.text.isEmpty) {
+
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Please enter username and password"))
+        const SnackBar(
+          content: Text("Please enter username and password"),
+        ),
       );
       return;
     }
@@ -45,33 +50,31 @@ class _LoginScreenState extends State<LoginScreen> {
 
         await prefs.setString("firm_name", firmName);
         await prefs.setInt("user_id", userId);
-
-        /* SAVE LOGIN STATE */
-
         await prefs.setBool("is_logged_in", true);
 
-        if(!mounted) return;
+        if (!mounted) return;
 
         Navigator.pushReplacementNamed(context, "/dashboard");
 
-      }
-      else {
+      } else {
 
         ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Invalid login credentials"))
+          const SnackBar(
+            content: Text("Invalid login credentials"),
+          ),
         );
 
       }
 
-    }
-    catch (e) {
+    } catch (e) {
 
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Server error. Please try again."))
+        const SnackBar(
+          content: Text("Server error. Please try again."),
+        ),
       );
 
       debugPrint(e.toString());
-
     }
 
     setState(() {
@@ -85,9 +88,30 @@ class _LoginScreenState extends State<LoginScreen> {
 
     return Scaffold(
 
+      backgroundColor: const Color(0xFFF4F6F9),
+
       appBar: AppBar(
-        title: const Text("EXPIROCHAIN"),
+
         backgroundColor: const Color(0xFF0f172a),
+
+        title: const Text(
+          "EXPIROCHAIN",
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+
+        actions: [
+
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.white),
+            onPressed: () {
+              SystemNavigator.pop();
+            },
+          )
+
+        ],
       ),
 
       body: Center(
@@ -100,6 +124,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
             child: Container(
 
+              width: 400,
               padding: const EdgeInsets.all(25),
 
               decoration: BoxDecoration(
@@ -109,14 +134,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   BoxShadow(
                     color: Colors.black12,
                     blurRadius: 10,
-                  ),
+                  )
                 ],
               ),
 
               child: Column(
-
                 mainAxisSize: MainAxisSize.min,
-
                 children: [
 
                   const Text(
@@ -124,10 +147,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w600,
+                      color: Color(0xFF0f172a),
                     ),
                   ),
 
                   const SizedBox(height: 25),
+
+                  /* USERNAME */
 
                   TextField(
                     controller: usernameController,
@@ -138,6 +164,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
 
                   const SizedBox(height: 15),
+
+                  /* PASSWORD */
 
                   TextField(
                     controller: passwordController,
@@ -150,8 +178,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   const SizedBox(height: 20),
 
-                  SizedBox(
+                  /* LOGIN BUTTON */
 
+                  SizedBox(
                     width: double.infinity,
 
                     child: ElevatedButton(
@@ -180,25 +209,15 @@ class _LoginScreenState extends State<LoginScreen> {
                           color: Colors.white,
                         ),
                       ),
-
                     ),
-
                   ),
 
                 ],
-
               ),
-
             ),
-
           ),
-
         ),
-
       ),
-
     );
-
   }
-
 }

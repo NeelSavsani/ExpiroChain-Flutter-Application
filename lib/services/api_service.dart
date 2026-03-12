@@ -116,4 +116,17 @@ class ApiService {
     return jsonDecode(response.body);
   }
 
+
+
+  /* GET EXPIRY TRACKER */
+  static Future<Map<String,dynamic>> getExpiryTracker(int userId) async {
+
+    final response = await http.get(
+        Uri.parse("${ApiConfig.baseUrl}/get_expiry_tracker.php?user_id=$userId")
+    );
+
+    return jsonDecode(response.body);
+
+  }
+
 }
