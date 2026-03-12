@@ -129,4 +129,19 @@ class ApiService {
 
   }
 
+  /* EXPORT REPORT */
+
+  static Future<String> exportReports(
+      int userId,
+      String type,
+      String table,
+      ) async {
+
+    final url =
+        "${ApiConfig.exportReports}?user_id=$userId&type=$type&table=$table";
+
+    return url;
+
+  }
+
 }
