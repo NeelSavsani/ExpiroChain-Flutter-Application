@@ -19,6 +19,11 @@ class _ReportsScreenState extends State<ReportsScreen> {
   String selectedFormat = "pdf";
   String selectedReport = "products";
 
+/* ⭐ DOWNLOAD PROGRESS VARIABLES */
+
+  double downloadProgress = 0;
+  bool isDownloading = false;
+
 /* ===================================== OPEN EXPORT DIALOG ===================================== */
 
   void openExportDialog() {
@@ -184,41 +189,44 @@ class _ReportsScreenState extends State<ReportsScreen> {
       String filePath =
           "${downloadDir.path}/$fileName";
 
+/* START DOWNLOAD */
+
+      setState(() {
+        isDownloading = true;
+        downloadProgress = 0;
+      });
+
 /* DOWNLOAD FILE */
 
       Dio dio = Dio();
 
-      Response response = await dio.download(
+      await dio.download(
         url,
         filePath,
-        options: Options(
-          responseType: ResponseType.bytes,
-          followRedirects: false,
-          validateStatus: (status) {
-            return status! < 500;
-          },
-        ),
+
+        onReceiveProgress: (received, total){
+
+          if(total != -1){
+
+            setState(() {
+              downloadProgress = received / total;
+            });
+
+          }
+
+        },
+
       );
 
-/* VERIFY FILE SIZE */
+/* DOWNLOAD COMPLETE */
 
-      File file = File(filePath);
-
-      if(await file.length() == 0){
-
-        if(!mounted) return;
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("File download failed")),
-        );
-
-        return;
-
-      }
-
-      if(!mounted) return;
+      setState(() {
+        isDownloading = false;
+      });
 
 /* SUCCESS MESSAGE */
+
+      if(!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Saved in Downloads: $fileName")),
@@ -230,6 +238,10 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
     }
     catch(e){
+
+      setState(() {
+        isDownloading = false;
+      });
 
       if(!mounted) return;
 
@@ -276,7 +288,30 @@ class _ReportsScreenState extends State<ReportsScreen> {
                       ),
                     ),
 
-                    ElevatedButton.icon(
+/* ⭐ EXPORT BUTTON OR PROGRESS */
+
+                    isDownloading
+                        ? SizedBox(
+                      width: 180,
+                      child: Column(
+                        children: [
+
+                          LinearProgressIndicator(
+                            value: downloadProgress,
+                          ),
+
+                          const SizedBox(height: 6),
+
+                          Text(
+                            "Downloading ${(downloadProgress * 100).toStringAsFixed(0)}%",
+                            style: const TextStyle(fontSize: 12),
+                          )
+
+                        ],
+                      ),
+                    )
+
+                        : ElevatedButton.icon(
                       icon: const Icon(Icons.file_download),
                       label: const Text("Export"),
                       style: ElevatedButton.styleFrom(
