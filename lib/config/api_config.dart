@@ -18,4 +18,6 @@ class ApiConfig {
 
   static const String exportReports = "$baseUrl/export_reports_api.php";
 
+  static const String getDashboard = "$baseUrl/get_dashboard_api.php";
+
 }

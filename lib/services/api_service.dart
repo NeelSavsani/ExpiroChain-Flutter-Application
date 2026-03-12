@@ -129,4 +129,15 @@ class ApiService {
         "?user_id=$userId&type=$type&table=$table";
   }
 
+
+  /*  GET DASHBOARD */
+  static Future<Map<String,dynamic>> getDashboard(int userId) async {
+
+    final response = await http.get(
+        Uri.parse("${ApiConfig.baseUrl}/get_dashboard_api.php?user_id=$userId")
+    );
+
+    return jsonDecode(response.body);
+  }
+
 }
