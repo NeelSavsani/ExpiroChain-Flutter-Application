@@ -24,27 +24,43 @@ class _ExpiryTrackerScreenState extends State<ExpiryTrackerScreen> {
     loadExpiry();
   }
 
+  /* =====================================
+        LOAD EXPIRY DATA
+  ===================================== */
+
   Future<void> loadExpiry() async {
 
     final prefs = await SharedPreferences.getInstance();
     int userId = prefs.getInt("user_id") ?? 0;
 
-    final result = await ApiService.getExpiryTracker(userId);
+    try {
 
-    if(result["status"] == "success"){
+      final result = await ApiService.getExpiryTracker(userId);
 
       setState(() {
-        soon = result["expiring_soon"];
-        expired = result["expired"];
+
+        soon = result["expiring_soon"] ?? [];
+        expired = result["expired"] ?? [];
+
+        loading = false;
+
+      });
+
+    } catch (e) {
+
+      print(e);
+
+      setState(() {
         loading = false;
       });
 
-    }else{
-      setState(() {
-        loading = false;
-      });
     }
+
   }
+
+  /* =====================================
+        ROW COLOR
+  ===================================== */
 
   Color getRowColor(int days){
 
@@ -53,7 +69,12 @@ class _ExpiryTrackerScreenState extends State<ExpiryTrackerScreen> {
     }else{
       return const Color(0xFFFFF7ED); // warning
     }
+
   }
+
+  /* =====================================
+        EXPIRING SOON TABLE
+  ===================================== */
 
   Widget buildSoonTable(){
 
@@ -65,6 +86,7 @@ class _ExpiryTrackerScreenState extends State<ExpiryTrackerScreen> {
     }
 
     return DataTable(
+
       columns: const [
 
         DataColumn(label: Text("Name")),
@@ -74,19 +96,24 @@ class _ExpiryTrackerScreenState extends State<ExpiryTrackerScreen> {
         DataColumn(label: Text("Days Left")),
 
       ],
+
       rows: soon.map((item){
 
         int days = int.parse(item["days_left"].toString());
 
         return DataRow(
+
           color: MaterialStateProperty.all(getRowColor(days)),
+
           cells: [
 
-            DataCell(Text(item["prod_name"])),
-            DataCell(Text(item["batch_no"])),
+            DataCell(Text(item["prod_name"].toString())),
+            DataCell(Text(item["batch_no"].toString())),
             DataCell(Text(item["qty"].toString())),
-            DataCell(Text(item["exp_date"])),
+            DataCell(Text(item["exp_date"].toString())),
+
             DataCell(
+
               Text(
                 "$days days",
                 style: TextStyle(
@@ -94,14 +121,22 @@ class _ExpiryTrackerScreenState extends State<ExpiryTrackerScreen> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
+
             ),
 
           ],
+
         );
 
       }).toList(),
+
     );
+
   }
+
+  /* =====================================
+        EXPIRED TABLE
+  ===================================== */
 
   Widget buildExpiredTable(){
 
@@ -113,6 +148,7 @@ class _ExpiryTrackerScreenState extends State<ExpiryTrackerScreen> {
     }
 
     return DataTable(
+
       columns: const [
 
         DataColumn(label: Text("Name")),
@@ -121,22 +157,31 @@ class _ExpiryTrackerScreenState extends State<ExpiryTrackerScreen> {
         DataColumn(label: Text("Expired On")),
 
       ],
+
       rows: expired.map((item){
 
         return DataRow(
+
           cells: [
 
-            DataCell(Text(item["prod_name"])),
-            DataCell(Text(item["batch_no"])),
+            DataCell(Text(item["prod_name"].toString())),
+            DataCell(Text(item["batch_no"].toString())),
             DataCell(Text(item["qty"].toString())),
-            DataCell(Text(item["exp_date"])),
+            DataCell(Text(item["exp_date"].toString())),
 
           ],
+
         );
 
       }).toList(),
+
     );
+
   }
+
+  /* =====================================
+        UI
+  ===================================== */
 
   @override
   Widget build(BuildContext context) {
@@ -151,6 +196,7 @@ class _ExpiryTrackerScreenState extends State<ExpiryTrackerScreen> {
 
         child: loading
             ? const Center(child: CircularProgressIndicator())
+
             : SingleChildScrollView(
 
           padding: const EdgeInsets.all(20),

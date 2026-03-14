@@ -34,6 +34,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> loadDashboard() async {
 
     final prefs = await SharedPreferences.getInstance();
+
     firmName = prefs.getString("firm_name") ?? "";
     int userId = prefs.getInt("user_id") ?? 0;
 
@@ -57,14 +58,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
       });
 
     } catch (e) {
+
       loading = false;
+
     }
 
   }
 
-  Widget statBox(String title, int value) {
+/* STAT BOX */
 
-    return Container(
+  Widget statBox(String title, int value, {String? route}) {
+
+    Widget box = Container(
 
       height: 95,
 
@@ -104,7 +109,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
         ],
       ),
+
     );
+
+/* MAKE CLICKABLE IF ROUTE EXISTS */
+
+    if(route != null){
+
+      return InkWell(
+
+        onTap: (){
+          Navigator.pushNamed(context, route);
+        },
+
+        borderRadius: BorderRadius.circular(10),
+
+        child: box,
+
+      );
+
+    }
+
+    return box;
 
   }
 
@@ -112,6 +138,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
 
     final size = MediaQuery.of(context).size;
+
     double containerWidth = size.width * 0.8;
 
     return AppLayout(
@@ -119,10 +146,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
       route: "/dashboard",
 
       child: Container(
+
         width: double.infinity,
+
         color: const Color(0xFFF4F6F9),
 
         child: loading
+
             ? const Center(child: CircularProgressIndicator())
 
             : Center(
@@ -138,6 +168,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Container(
 
                 width: containerWidth,
+
                 height: size.height * 0.2,
 
                 alignment: Alignment.center,
@@ -165,7 +196,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
               const SizedBox(height: 10),
 
-/* GRID STATS */
+/* GRID */
 
               SizedBox(
 
@@ -180,11 +211,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     Row(
                       children: [
 
-                        Expanded(child: statBox("Total Products", totalProducts)),
+                        Expanded(
+                          child: statBox(
+                            "Total Products",
+                            totalProducts,
+                            route: "/products",
+                          ),
+                        ),
 
                         const SizedBox(width: 10),
 
-                        Expanded(child: statBox("Total Stocks", totalStocks)),
+                        Expanded(
+                          child: statBox(
+                            "Total Stocks",
+                            totalStocks,
+                            route: "/stock",
+                          ),
+                        ),
 
                       ],
                     ),
@@ -196,11 +239,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     Row(
                       children: [
 
-                        Expanded(child: statBox("Total Medicines", totalMedicine)),
+                        Expanded(
+                          child: statBox(
+                            "Total Medicines",
+                            totalMedicine,
+                          ),
+                        ),
 
                         const SizedBox(width: 10),
 
-                        Expanded(child: statBox("Total Cosmetics", totalCosmetic)),
+                        Expanded(
+                          child: statBox(
+                            "Total Cosmetics",
+                            totalCosmetic,
+                          ),
+                        ),
 
                       ],
                     ),
@@ -212,11 +265,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     Row(
                       children: [
 
-                        Expanded(child: statBox("Total Others", totalOther)),
+                        Expanded(
+                          child: statBox(
+                            "Total Others",
+                            totalOther,
+                          ),
+                        ),
 
                         const SizedBox(width: 10),
 
-                        Expanded(child: statBox("Near Expiry", nearExpiry)),
+                        Expanded(
+                          child: statBox(
+                            "Near Expiry",
+                            nearExpiry,
+                          ),
+                        ),
 
                       ],
                     ),
@@ -228,11 +291,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     Row(
                       children: [
 
-                        Expanded(child: statBox("Nearly Expiry Sold", nearlySold)),
+                        Expanded(
+                          child: statBox(
+                            "Nearly Expiry Sold",
+                            nearlySold,
+                          ),
+                        ),
 
                         const SizedBox(width: 10),
 
-                        Expanded(child: statBox("Total Expired", expired)),
+                        Expanded(
+                          child: statBox(
+                            "Total Expired",
+                            expired,
+                          ),
+                        ),
 
                       ],
                     ),

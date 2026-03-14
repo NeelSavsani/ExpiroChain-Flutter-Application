@@ -24,7 +24,7 @@ class ApiService {
   static Future<Map<String, dynamic>> getAccount(int userId) async {
 
     final response = await http.get(
-      Uri.parse("${ApiConfig.baseUrl}/get_account.php?user_id=$userId"),
+      Uri.parse("${ApiConfig.baseUrl}/get_account_api.php?user_id=$userId"),
     );
 
     return jsonDecode(response.body);
@@ -113,7 +113,7 @@ class ApiService {
   static Future<Map<String, dynamic>> getExpiryTracker(int userId) async {
 
     final response = await http.get(
-      Uri.parse("${ApiConfig.baseUrl}/get_expiry_tracker.php?user_id=$userId"),
+      Uri.parse("${ApiConfig.baseUrl}/get_expiry_tracker_api.php?user_id=$userId"),
     );
 
     return jsonDecode(response.body);
